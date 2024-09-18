@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from sqlalchemy import create_engine, text
-from model.event import Events,Event
+from model.event import Events,Event,EventResponse
 from model.profile import Profile
 from model.auth import Login,SucessResponse,SignUp
+from repository.event import EventRepo
 import os
 from dotenv import load_dotenv
 from typing import List
@@ -12,6 +13,7 @@ load_dotenv()
 app = FastAPI()
 supabase_url = os.getenv('SUPABASE_URL')
 engine = create_engine(supabase_url)
+event_repo = EventRepo(supabase_url)
 
 
 
@@ -28,6 +30,7 @@ def signup(input:SignUp):
     with engine.connect() as conn:
         result = conn.execute(text("INSERT INTO users(name, auth_id, token) VALUES(:user_name, :auth_id, :token)"),
             {"user_name": user_name, "auth_id": auth_id, "token": token}).mappings()
+        
     return SucessResponse(success=True)
     
 
@@ -39,7 +42,10 @@ def get_events_board():
     return Events(events=event_list)
 
 
-# @app.post("/events")
+@app.post("/events",response_model=EventResponse)
+def add_event(input:Event):
+    event_id = event_repo.add_events(input)
+    return EventResponse(event_id=event_id, message="Event created successfully")
 
 @app.get("/users/{user_id}/profile",response_model=Profile)
 def get_profile(user_id: int):

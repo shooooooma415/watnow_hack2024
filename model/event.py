@@ -9,7 +9,7 @@ class Participant(BaseModel):
 class Option(BaseModel):
     title: str
     participant_count: int
-    participants: List[Participant]
+    participants: List[Optional[Participant]]
 
 class Event(BaseModel):
     title: str
@@ -17,11 +17,18 @@ class Event(BaseModel):
     is_all_day: bool
     start_time: datetime
     end_time: datetime
+    closing_time: datetime
     location_name: str
-    location_point: str  # PostGISのpoint型のデータを文字列として扱います
+    location_point: str
     cost: int
     message: str
-    options: List[Option]
+    manager_id: str
+    options: Optional[Option]
 
 class Events(BaseModel):
     events: List[Event]
+    
+class EventResponse(BaseModel):
+    event_id: int
+    message: str
+    

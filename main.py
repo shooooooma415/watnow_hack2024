@@ -1,4 +1,4 @@
-from fastapi import FastAPI,BackgroundTasks
+from fastapi import FastAPI
 from sqlalchemy import create_engine, text
 from model.event import Events,Event,EventResponse,GetEvent
 from model.profile import Profile
@@ -11,11 +11,7 @@ from typing import List
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi import Request, status
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import messaging
-
-from datetime import datetime,date,timedelta
+from repository.push_service import PushService
 
 load_dotenv()
 
@@ -23,7 +19,7 @@ app = FastAPI()
 supabase_url = os.getenv('SUPABASE_URL')
 engine = create_engine(supabase_url)
 event_repo = EventRepo(supabase_url)
-
+push_service = PushService(supabase_url)
 
 
 
@@ -70,9 +66,8 @@ def get_events_board():
 
 
 @app.post("/events", response_model=EventResponse)
-def add_event(input: Event, background_tasks: BackgroundTasks):
+def add_event(input: Event):
     event_response = event_repo.add_events(input)
-    background_tasks.add_task()
     return event_response
 
 @app.get("/users/{user_id}/profile",response_model=Profile)
@@ -112,8 +107,9 @@ def send_arrival_time_info(event_id: int, user_id: int):
             return AttendancesResponse(message="No attendance found for this event and user.")
         
 
-# def send_notifications(input:Event):
-#     start_time = input.start_time
-#     notification_date  = start_time.replace(hour=22,minute=0,second=0,microsecond=0) - timedelta(days=1)
-    
-    
+@app.get("/send")
+def send_massage():
+    event_id_list = push_service.get_event_id()
+    for event_id in event_id_list:
+        push_service.send_notofication(event_id)
+    return "success"

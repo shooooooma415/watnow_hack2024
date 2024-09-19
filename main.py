@@ -22,20 +22,7 @@ supabase_url = os.getenv('SUPABASE_URL')
 engine = create_engine(supabase_url)
 event_repo = EventRepo(supabase_url)
 
-# cred = credentials.Certificate("serviceAccountKey.json")
-# firebase_admin.initialize_app(cred)
-# applicable_token_list = list()
 
-# for i in len(applicable_token_list):
-#     message = messaging.Message(
-#         notification=messaging.Notification(
-#             title='hoge',
-#             body='hoge',
-#         ),
-#         token=applicable_token_list[i],
-#     )
-
-#     response = messaging.send(message)
 
 
 @app.get("/")
@@ -85,13 +72,14 @@ def add_event(input: Event):
     event_response = event_repo.add_events(input)
     return event_response
 
-# @app.get("/users/{user_id}/profile",response_model=Profile)
-# def get_profile(user_id: int):
-#     with engine.connect() as conn:
-#         query = text("SELECT * FROM users WHERE id = :user_id")
-#         result = conn.execute(query, {"user_id": user_id}).mappings()
-#         profiles = [Profile(**row) for row in result]
-#     return profiles
+@app.get("/users/{user_id}/profile",response_model=Profile)
+def get_profile(user_id: int):
+    with engine.connect() as conn:
+        query = text("SELECT * FROM users WHERE id = :user_id")
+        result = conn.execute(query, {"user_id": user_id}).mappings()
+        name = result['name']
+        
+    return Profile()
 
 @app.get("/users/{user_id}/name")
 def get_name(user_id: int):

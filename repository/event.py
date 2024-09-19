@@ -49,7 +49,7 @@ class EventRepo():
                 result_id = int(result.scalar()) 
                 
                 if option:
-                    conn.execute(text("INSERT INTO options (event_id, title) VALUES (:event_id, :option)"), {
+                    conn.execute(text("INSERT INTO options (event_id, option) VALUES (:event_id, :option)"), {
                         "event_id": result_id,
                         "option": option
                     })

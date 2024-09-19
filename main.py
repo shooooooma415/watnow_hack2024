@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,BackgroundTasks
 from sqlalchemy import create_engine, text
 from model.event import Events,Event,EventResponse,GetEvent
 from model.profile import Profile
@@ -14,6 +14,8 @@ from fastapi import Request, status
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import messaging
+
+from datetime import datetime,date,timedelta
 
 load_dotenv()
 
@@ -68,8 +70,9 @@ def get_events_board():
 
 
 @app.post("/events", response_model=EventResponse)
-def add_event(input: Event):
+def add_event(input: Event, background_tasks: BackgroundTasks):
     event_response = event_repo.add_events(input)
+    background_tasks.add_task()
     return event_response
 
 @app.get("/users/{user_id}/profile",response_model=Profile)
@@ -109,3 +112,8 @@ def send_arrival_time_info(event_id: int, user_id: int):
             return AttendancesResponse(message="No attendance found for this event and user.")
         
 
+# def send_notifications(input:Event):
+#     start_time = input.start_time
+#     notification_date  = start_time.replace(hour=22,minute=0,second=0,microsecond=0) - timedelta(days=1)
+    
+    

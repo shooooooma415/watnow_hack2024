@@ -6,8 +6,8 @@ from sqlalchemy import create_engine, text
 import os
 from typing import List
 
-# cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
-cred = credentials.Certificate("serviceAccountKey.json")
+cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
+# cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 
 

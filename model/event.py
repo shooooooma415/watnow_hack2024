@@ -1,6 +1,11 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional
+from sqlalchemy import Column, Integer, String, TIMESTAMP, Boolean, Float
+from sqlalchemy.ext.declarative import declarative_base
+
+
+Base = declarative_base()
 
 class Participant(BaseModel):
     user_id: int
@@ -19,11 +24,13 @@ class Event(BaseModel):
     end_time: datetime
     closing_time: datetime
     location_name: str
-    location_point: str
     cost: int
     message: str
-    manager_id: str
-    options: Optional[Option]
+    manager_id: int
+    latitude: float
+    longitude: float
+    # options: Optional[Option]  
+
 
 class Events(BaseModel):
     events: List[Event]

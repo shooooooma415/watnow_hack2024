@@ -107,7 +107,7 @@ def send_arrival_time_info(event_id: int, user_id: int):
         
 
 @app.get("/send")
-def send_message():
+def send():
     event_id_list = push_service.get_event_id()
     for event_id in event_id_list:
         push_service.send_notofication(event_id)

@@ -6,7 +6,8 @@ from sqlalchemy import create_engine, text
 import os
 from typing import List
 
-cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
+# cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
+cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 
 
@@ -21,11 +22,9 @@ class PushService():
         upper = dt_2days_later.replace(hour=0,minute=0,second=0)
         notification_event_id_list = list()
         with self.engine.connect() as conn:
-            lower_time = lower.time()
-            upper_time = upper.time()
             query = conn.execute(
                 text("SELECT id FROM events WHERE :lower < start_date_time AND start_date_time < :upper"),
-                {"lower": lower_time, "upper": upper_time}
+                {"lower": lower, "upper": upper}
             )
             notification_event_id_list = [row['id'] for row in query.fetchall()]
             

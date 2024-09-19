@@ -22,9 +22,11 @@ class PushService():
         upper = dt_2days_later.replace(hour=0,minute=0,second=0)
         notification_event_id_list = list()
         with self.engine.connect() as conn:
+            lower_time = lower.timestamp()
+            upper_time = upper.timestamp()
             query = conn.execute(
                 text("SELECT id FROM events WHERE :lower < start_date_time AND start_date_time < :upper"),
-                {"lower": lower, "upper": upper}
+                {"lower": lower_time, "upper": upper_time}
             )
             notification_event_id_list = [row['id'] for row in query.fetchall()]
             

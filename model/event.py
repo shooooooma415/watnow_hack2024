@@ -29,11 +29,27 @@ class Event(BaseModel):
     manager_id: int
     latitude: float
     longitude: float
-    # options: Optional[Option]  
+    options: Optional[Option]  
+
+class GetEvent(BaseModel):
+    id: int
+    title: str
+    description: str
+    is_all_day: bool
+    start_date_time: datetime
+    end_date_time: datetime
+    closing_date_time: datetime
+    location_name: str
+    latitude: float
+    longitude: float
+    cost: float
+    message: str
+    manager_id: int
+    options: Optional[str] = None
 
 
 class Events(BaseModel):
-    events: List[Event]
+    events: list[GetEvent]
     
 class EventResponse(BaseModel):
     event_id: int

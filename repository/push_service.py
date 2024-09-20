@@ -62,7 +62,7 @@ class PushService():
                                 "id":option_id
                             }
                 for row in query:
-                    token_list.append(row['id'])
+                    token_list.append(row['token'])
         return token_list
     
     def send_notofication(self,event_id:int):
@@ -72,7 +72,7 @@ class PushService():
         result = query.fetchone()
         event_title = result['title']
         token_list = self.get_token(self.get_option_id(event_id))
-        message = messaging.Message(
+        message = messaging.MulticastMessage(
             notification=messaging.Notification(
                 title=event_title,
                 body=f'明日は{event_title}です！'
@@ -80,5 +80,8 @@ class PushService():
             tokens=token_list
         )
         response = messaging.send_multicast(message)
+        
+        print(f"Firebaseからのレスポンス: {response}")
+        print(f"成功数: {response.success_count}, 失敗数: {response.failure_count}")
         
         return response

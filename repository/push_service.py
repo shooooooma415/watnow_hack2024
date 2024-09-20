@@ -71,7 +71,7 @@ class PushService():
         event_title = result['title']
         token_list = self.get_user_id(self.get_option_id(event_id))
         message = messaging.subscribe_to_topic(
-                title = event_title
+                title = event_title,
                 body ='明日は' + event_title + "です！",
         )
         response = messaging.send(token_list,message)

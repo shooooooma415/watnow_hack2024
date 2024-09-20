@@ -15,21 +15,20 @@ class PushService():
     def __init__(self, supabase_url: str):
         self.engine = create_engine(supabase_url)
 
-    def get_event_id(self) -> List:
+    def get_event_id(self) -> List[int]:
         dt_now = datetime.now()
         dt_2days_later = dt_now + timedelta(days=2)
-        lower = dt_now.replace(hour=23,minute=59,second=59)
-        upper = dt_2days_later.replace(hour=0,minute=0,second=0)
-        notification_event_id_list = list()
+        lower = dt_now.replace(hour=23, minute=59, second=59)
+        upper = dt_2days_later.replace(hour=0, minute=0, second=0)
+        
         with self.engine.connect() as conn:
-            lower_time = lower.timestamp()
-            upper_time = upper.timestamp()
+            # 直接 datetime オブジェクトでクエリに渡す
             query = conn.execute(
                 text("SELECT id FROM events WHERE :lower < start_date_time AND start_date_time < :upper"),
-                {"lower": lower_time, "upper": upper_time}
+                {"lower": lower, "upper": upper}
             )
             notification_event_id_list = [row['id'] for row in query.fetchall()]
-            
+        
         return notification_event_id_list
     
     def get_option_id(self,event_id:str)->List[str]:

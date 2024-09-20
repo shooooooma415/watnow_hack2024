@@ -111,8 +111,8 @@ def send():
     event_id_list = push_service.get_event_id()
     response_list = list()
     for event_id in event_id_list:
-        push_service.send_notofication(event_id)
-        response_list.append(push_service.send_notofication(event_id))
+        response = push_service.send_notofication(event_id)
+        response_list.append(response)
     return response_list
 
 def send_message():

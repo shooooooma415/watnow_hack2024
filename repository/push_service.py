@@ -70,10 +70,13 @@ class PushService():
         result = query.fetchone()
         event_title = result['title']
         token_list = self.get_user_id(self.get_option_id(event_id))
-        message = messaging.subscribe_to_topic(
-                title = event_title,
-                body ='明日は' + event_title + "です！",
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title=event_title,
+                body=f'明日は{event_title}です！'
+            ),
+            tokens=token_list
         )
-        response = messaging.send(token_list,message)
+        response = messaging.send_multicast(message)
         
         return response

@@ -68,20 +68,12 @@ class PushService():
         with self.engine.connect() as conn:
             query = conn.execute(text("SELECT title FROM events WHERE id = :id")),{"id": event_id}
         result = query.fetchone()
-        title = result['title']
+        event_title = result['title']
         token_list = self.get_user_id(self.get_option_id(event_id))
         message = messaging.subscribe_to_topic(
-                tokens=token_list,
-                topic='明日は' + title + "です！",
+                title = event_title
+                body ='明日は' + event_title + "です！",
         )
-        messaging.send(message)
+        response = messaging.send(token_list,message)
         
-        
-        
-                
-# def send_notifications(input:Event):
-#     start_time = input.start_time
-#     notification_date  = start_time.replace(hour=22,minute=0,second=0,microsecond=0) - timedelta(days=1)
-    
-    
-    
+        return response

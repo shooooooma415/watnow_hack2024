@@ -31,7 +31,7 @@ class PushService():
         
         return notification_event_id_list
     
-    def get_option_id(self,event_id:str)->List[str]:
+    def get_option_id(self,event_id:int)->List[int]:
         option_id_list = list()
         with self.engine.connect() as conn:
             query = conn.execute(
@@ -47,7 +47,7 @@ class PushService():
                 option_id_list.append(row['id'])
         return option_id_list
     
-    def get_token(self, option_id_list:List[str])->List[str]:
+    def get_token(self, option_id_list:List[int])->List[str]:
         token_list = list()
         for option_id in option_id_list:
             with self.engine.connect() as conn:
@@ -65,7 +65,7 @@ class PushService():
                     token_list.append(row['id'])
         return token_list
     
-    def send_notofication(self,event_id:str):
+    def send_notofication(self,event_id:int):
         
         with self.engine.connect() as conn:
             query = conn.execute(text("SELECT title FROM events WHERE id = :id")),{"id": event_id}

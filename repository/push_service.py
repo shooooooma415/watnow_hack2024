@@ -6,8 +6,8 @@ from sqlalchemy import create_engine, text
 import os
 from typing import List
 
-cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
-# cred = credentials.Certificate("serviceAccountKey.json")
+# cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
+cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 
 
@@ -23,13 +23,12 @@ class PushService():
         print(text("SELECT id FROM events WHERE :lower < start_date_time AND start_date_time < :upper"),
                 {"lower": lower, "upper": upper})
         with self.engine.connect() as conn:
-            # 直接 datetime オブジェクトでクエリに渡す
             query = conn.execute(
                 text("SELECT id FROM events WHERE :lower < start_date_time AND start_date_time < :upper"),
                 {"lower": lower, "upper": upper}
             )
             result = query.fetchall()
-            print(f"クエリ結果: {result}")  # 取得した結果を表示
+            print(f"クエリ結果: {result}")
             notification_event_id_list = [row[0] for row in result]
         
         return notification_event_id_list
@@ -40,10 +39,10 @@ class PushService():
             result = conn.execute(text(
                 "SELECT o.id FROM events e JOIN options o ON e.id = o.event_id WHERE e.id = :id AND o.option = '参加'"),
                 {"id": event_id}
-            ).fetchall()  # すべての結果を取得
+            ).fetchall()
             
             for row in result:
-                option_id_list.append(row[0])  # 各行の最初の要素を追加
+                option_id_list.append(row[0])
         
         print(f"取得したオプションIDリスト: {option_id_list}")
         return option_id_list
@@ -58,10 +57,10 @@ class PushService():
                 result = conn.execute(
                     text("""SELECT u.token FROM votes v JOIN users u ON v.user_id = u.id WHERE v.option_id = :id"""),
                     {"id": option_id}
-                ).fetchall()  # すべての結果を取得
+                ).fetchall()
                 
                 for row in result:
-                    token_list.append(row[0])  # インデックスでアクセス
+                    token_list.append(row[0])
         print(f"取得したトークンリスト: {token_list}")
         return token_list
 

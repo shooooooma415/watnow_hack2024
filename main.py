@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from sqlalchemy import create_engine, text
-from model.event import Events,Event,EventResponse,GetEvent
+from model.event import PostEvent,EventResponse,GetEvent
 from model.profile import Profile
 from model.auth import Login,SucessResponse,SignUp
 from model.attendances import Attendances,AttendancesResponse
 from repository.event import EventRepo
+from service.event import EventService
 import os
 from dotenv import load_dotenv
 from typing import List
@@ -20,6 +21,7 @@ supabase_url = os.getenv('SUPABASE_URL')
 engine = create_engine(supabase_url)
 event_repo = EventRepo(supabase_url)
 push_service = PushService(supabase_url)
+event = EventService(supabase_url)
 
 
 @app.get("/")
@@ -44,28 +46,15 @@ def signup(input:SignUp):
     return {"id": user_id}
     
 
-@app.get("/events/board", response_model=Events)
+@app.get("/events/board",response_model = GetEvent)
 def get_events_board():
-    with engine.connect() as conn:
-        result = conn.execute(text("SELECT * FROM events")).mappings()
+    events_board = event.fetch_event(24)
 
-        # データを取得して、各フィールドを変換
-        event_list = []
-        for row in result:
-            # datetime変換が必要なフィールドだけ変換する
-            row_dict = dict(row)
-            row_dict['start_date_time'] = event_repo.convert_to_datetime(row_dict['start_date_time'])
-            row_dict['end_date_time'] = event_repo.convert_to_datetime(row_dict['end_date_time'])
-            row_dict['closing_date_time'] = event_repo.convert_to_datetime(row_dict['closing_date_time'])
-            
-            # GetEvent インスタンスを作成してリストに追加
-            event_list.append(GetEvent(**row_dict))
-
-    return Events(events=event_list)
+    return events_board
 
 
 @app.post("/events", response_model=EventResponse)
-def add_event(input: Event):
+def add_event(input: PostEvent):
     event_response = event_repo.add_events(input)
     return event_response
 

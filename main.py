@@ -49,7 +49,6 @@ def signup(input:SignUp):
 @app.get("/events/board",response_model = GetEvent)
 def get_events_board():
     events_board = event.fetch_event(24)
-
     return events_board
 
 

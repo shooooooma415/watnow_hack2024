@@ -30,7 +30,7 @@ class EventRepo():
                         title, description, is_all_day, start_date_time, end_date_time, closing_date_time, location_name, cost, message, author_id, latitude, longitude
                     ) 
                     VALUES (
-                        :title, :description, :is_all_day, :start_time, :end_time, :closing_time, :location_name, :cost, :message, :author_id, :latitude, :longitude
+                        :title, :description, :is_all_day, :start_time, :end_time, :closing_time, :location_name, :cost, :message, :manager_id, :latitude, :longitude
                     ) RETURNING id 
                 """), {
                     'title': title,

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from sqlalchemy import create_engine, text
-from model.event import PostEvent,EventResponse,GetEvent
+from model.event import PostEvent,EventResponse,Events
 from model.profile import Profile
 from model.auth import Login,SucessResponse,SignUp
 from model.attendances import Attendances,AttendancesResponse
@@ -46,9 +46,9 @@ def signup(input:SignUp):
     return {"id": user_id}
     
 
-@app.get("/events/board",response_model = GetEvent)
+@app.get("/events/board",response_model = Events)
 def get_events_board():
-    events_board = event.fetch_event(24)
+    events_board = event.fetch_all_events()
     return events_board
 
 

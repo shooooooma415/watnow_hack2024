@@ -1,27 +1,26 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional
-from sqlalchemy import Column, Integer, String, TIMESTAMP, Boolean, Float
 from sqlalchemy.ext.declarative import declarative_base
 
 
 Base = declarative_base()
 
 class User(BaseModel):
-    user_id: int
-    user_name: str
+    user_id: int = None
+    user_name: str = None
 
 class Author(BaseModel):
     author_id: int = None
     author_name: str = None
 
-class UserBoard(BaseModel):
-    participants: List[User]
+class Participants(BaseModel):
+    participants: Optional[List[User]] = None
 
 class Option(BaseModel):
-    title: str
+    title: str = None
     participant_count: int = None
-    participants: Optional[UserBoard]
+    participants: Optional[Participants] = None
 
 class PostEvent(BaseModel):
     title: str
@@ -36,7 +35,7 @@ class PostEvent(BaseModel):
     latitude: float
     longitude: float
     author_id: int
-    options: Optional[Option] = None
+    options: Optional[List[Option]] = None
 
 class GetEvent(BaseModel):
     title: Optional[str] = None
@@ -51,11 +50,11 @@ class GetEvent(BaseModel):
     longitude: Optional[float] = None
     cost: Optional[float] = None
     message: Optional[str] = None
-    options: Optional[Option] = None 
+    options: Optional[List[Option]] = None
 
 
 class Events(BaseModel):
-    events: List[GetEvent]
+    events: Optional[List[GetEvent]] = None
     
 class EventResponse(BaseModel):
     event_id: int

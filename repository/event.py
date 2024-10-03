@@ -1,8 +1,8 @@
-from model.event import PostEvent,EventResponse,User,UserBoard,Author,GetEvent
+from model.event import PostEvent,EventResponse,User,Participants,Author,GetEvent,Option
 from sqlalchemy import create_engine, text, Column, Integer, String, TIMESTAMP, Boolean, Float
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
-from typing import List,Optional
+from typing import List,Dict,Optional
 
 class EventRepo():
     def __init__(self, supabase_url: str):
@@ -61,61 +61,61 @@ class EventRepo():
             return time_field
         return datetime.combine(datetime.today(), time_field) 
     
-    def get_option_id(self, event_id: int) -> List[int]:
-        option_id_list = []
+    def get_option(self, event_id: int) -> Dict[int, str]:
+        option_dict = {}
         with self.engine.connect() as conn:
             result = conn.execute(text(
-                "SELECT o.id FROM events e JOIN options o ON e.id = o.event_id WHERE e.id = :id"),
+                "SELECT o.id, o.option FROM events e JOIN options o ON e.id = o.event_id WHERE e.id = :id"),
                 {"id": event_id}
             ).fetchall()
             
             for row in result:
-                option_id_list.append(row[0])
-        return option_id_list
+                option_dict[row[0]] = row[1]
+        return option_dict
 
-    def get_participants(self, event_id: int) -> Optional[UserBoard]:
+    def get_participants(self, option_id: int) -> Optional[Participants]:
         user_list = []
-        option_id_list = self.get_option_id(event_id)
-
         with self.engine.connect() as conn:
-            for option_id in option_id_list:
-                result = conn.execute(
-                    text("""
-                        SELECT u.id, u.name 
-                        FROM votes v 
-                        JOIN users u 
-                        ON v.user_id = u.id 
-                        WHERE v.option_id = :id
-                        """),
-                    {"id": option_id}
-                ).fetchall()
+            result = conn.execute(
+                text("""
+                    SELECT u.id, u.name 
+                    FROM votes v 
+                    JOIN users u 
+                    ON v.user_id = u.id 
+                    WHERE v.option_id = :id
+                    """),
+                {"id": option_id}
+            ).fetchall()
 
-                for row in result:
-                    user_data = User(
-                        user_id=str(row[0]), 
-                        user_name=str(row[1])
-                    )
-                    user_list.append(user_data)
-        
-            return UserBoard(participants=user_list) if user_list else None
- 
-    def get_author(self,event_id:int) -> Optional[Author]:
+            for row in result:
+                user_data = User(
+                    user_id=str(row[0]), 
+                    user_name=str(row[1])
+                )
+                user_list.append(user_data)
+        return Participants(participants=user_list) if user_list else None
+
+
+    def get_author(self, event_id: int) -> Optional[Author]:
         with self.engine.connect() as conn:
             result = conn.execute(text("""
-                                    SELECT u.id, u.name 
-                                    FROM events e 
-                                    JOIN users u 
-                                    ON  e.author_id = u.id 
-                                    WHERE e.id = :event_id
-                                    """),
-                                {"event_id": event_id}).fetchall()
-            for row in result:
+                SELECT u.id, u.name 
+                FROM events e 
+                JOIN users u 
+                ON e.author_id = u.id 
+                WHERE e.id = :event_id
+            """), {"event_id": event_id}).fetchall()
+            
+            if result:
+                for row in result:
                     user_data = Author(
                         user_id=str(row[0]), 
                         user_name=str(row[1])
                     )
-        return user_data
-    
+                return user_data
+            else:
+                return None
+
     def get_event(self, event_id: int) -> Optional[GetEvent]:
         with self.engine.connect() as conn:
             result = conn.execute(text("""
@@ -138,14 +138,19 @@ class EventRepo():
             
             if result is None:
                 return None
-
+            
+            is_all_day= result.get('is_all_day')
+            start_date_time = result.get('start_date_time')
+            end_date_time = result.get('end_date_time')
+            closing_date_time = result.get('closing_date_time')
+            
             event_data = GetEvent(
                 title=result.get('title'),
                 description=result.get('description'),
-                is_all_day=result.get('is_all_day'), 
-                start_date_time=result.get('start_date_time'),
-                end_date_time=result.get('end_date_time'),  
-                closing_date_time=result.get('closing_date_time'),
+                is_all_day=is_all_day, 
+                start_date_time=start_date_time,
+                end_date_time=end_date_time,  
+                closing_date_time=closing_date_time,
                 location_name=result.get('location_name'), 
                 cost=result.get('cost'),
                 message=result.get('message'), 
@@ -154,3 +159,11 @@ class EventRepo():
             )
             
             return event_data
+    
+    def get_event_id(self) -> List[int]:
+        with self.engine.connect() as conn:
+            result = conn.execute(text("SELECT id FROM events")).mappings().fetchall()
+        event_ids = [row['id'] for row in result]
+        
+        return event_ids
+

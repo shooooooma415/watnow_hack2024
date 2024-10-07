@@ -1,6 +1,6 @@
-from repository.get_event import GetEvent, Option, Participants
+from repository.get_event import GetEvent, Participants
 from typing import List
-from model.event import FetchEvent, Events
+from model.event import FetchEvent, Events,Option
 from sqlalchemy import create_engine
 
 class EventService():

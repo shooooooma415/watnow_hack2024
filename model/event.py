@@ -44,7 +44,7 @@ class FetchEvent(BaseModel):
     start_date_time: Optional[datetime] = None
     end_date_time: Optional[datetime] = None
     closing_date_time: Optional[datetime] = None
-    location_name: Optional[str] = None
+    location_nime: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     cost: Optional[float] = None
@@ -58,3 +58,7 @@ class Events(BaseModel):
 class EventResponse(BaseModel):
     event_id: int
     message: str
+    
+class Location(BaseModel):
+    latitude: Optional[float]
+    longitude: Optional[float]

@@ -1,7 +1,5 @@
-from model.event import PostEvent,EventResponse,User,Participants,Author,FetchEvent,Option
-from sqlalchemy import create_engine, text, Column, Integer, String, TIMESTAMP, Boolean, Float
-from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime
+from model.event import User,Participants,Author,FetchEvent,Location
+from sqlalchemy import create_engine, text
 from typing import List,Dict,Optional
 
 class GetEvent():
@@ -109,8 +107,21 @@ class GetEvent():
     
     def get_event_id(self) -> List[int]:
         with self.engine.connect() as conn:
-            result = conn.execute(text("SELECT id FROM events")).mappings().fetchall()
+            result = conn.execute(text("SELECT id FROM events")).mappings()
         event_ids = [row['id'] for row in result]
         
         return event_ids
-
+    
+    def get_location(self,event_id:str) -> Optional[Location]:
+        with self.engine.connect() as conn:
+            result = conn.execute(text("""SELECT latitude,longitude 
+                                        FROM events 
+                                        WHERE id = :event_id"""), 
+                                    {"event_id": event_id}).mappings().first()
+            latitude = result.get("latitude")
+            longitude = result.get("longitude")
+            location = Location(latitude = latitude,
+                                longitude = longitude
+                                )
+        
+        return location

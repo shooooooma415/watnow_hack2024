@@ -1,15 +1,14 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,WebSocket
 from sqlalchemy import create_engine, text
-from model.event import PostEvent,EventResponse,Events
+from model.event import PostEvent,Events,EventResponse
 from model.profile import Profile
-from model.auth import Login,SucessResponse,SignUp
+from model.auth import SignUp
 from model.attendances import Attendances,AttendancesResponse
 from repository.get_event import GetEvent
-from repository.put_event import PutEvent
+from repository.add_event import AddEvent
 from service.event import EventService
 import os
 from dotenv import load_dotenv
-from typing import List
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi import Request, status
@@ -21,7 +20,7 @@ app = FastAPI()
 supabase_url = os.getenv('SUPABASE_URL')
 engine = create_engine(supabase_url)
 get_event = GetEvent(supabase_url)
-put_event = PutEvent(supabase_url)
+add_event = AddEvent(supabase_url)
 push_service = PushService(supabase_url)
 event = EventService(supabase_url)
 
@@ -55,19 +54,21 @@ def get_events_board():
     return events_board
 
 
-@app.post("/events", response_model=EventResponse)
-def add_event(input: PostEvent):
-    event_response = put_event.add_events(input)
-    return event_response
+@app.post("/events",response_model=EventResponse)
+def add_events_board(input: PostEvent):
+    event_id = add_event.add_events(input)
+    add_event.add_option(event_id)
+    response = EventResponse(event_id=event_id, message="イベントが作成されました")
+    return response
 
-@app.get("/users/{user_id}/profile",response_model=Profile)
-def get_profile(user_id: int):
-    with engine.connect() as conn:
-        query = text("SELECT * FROM users WHERE id = :user_id")
-        result = conn.execute(query, {"user_id": user_id}).mappings()
-        name = result['name']
+# @app.get("/users/{user_id}/profile",response_model=Profile)
+# def get_profile(user_id: int):
+#     with engine.connect() as conn:
+#         query = text("SELECT * FROM users WHERE id = :user_id")
+#         result = conn.execute(query, {"user_id": user_id}).mappings()
+#         name = result['name']
         
-    return Profile()
+#     return Profile()
 
 @app.get("/users/{user_id}/name")
 def get_name(user_id: int):
@@ -105,5 +106,10 @@ def send_message():
         response = push_service.send_notification(event_id)
         response_list.append(response)
     return response_list
+
+@app.websocket("/ws/ranking")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    pass
 
 # send_message()

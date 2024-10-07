@@ -1,14 +1,13 @@
-from model.event import PostEvent,EventResponse,User,Participants,Author,FetchEvent,Option
-from sqlalchemy import create_engine, text, Column, Integer, String, TIMESTAMP, Boolean, Float
-from sqlalchemy.ext.declarative import declarative_base
+from model.event import PostEvent
+from sqlalchemy import create_engine, text
 from datetime import datetime
 from typing import List,Dict,Optional
 
-class PutEvent():
+class AddEvent():
   def __init__(self, supabase_url: str):
     self.engine = create_engine(supabase_url)
 
-  def add_events(self, input: PostEvent) -> Optional[EventResponse]:
+  def add_events(self, input: PostEvent):
     title = input.title
     description = input.description
     is_all_day = input.is_all_day
@@ -48,7 +47,23 @@ class PutEvent():
           
         result_id = int(result.scalar()) 
         
-    return EventResponse(event_id=result_id, message="Event created successfully")
+    return result_id
+
+  def add_option(self, event_id: str):
+    with self.engine.connect() as conn:
+        with conn.begin():
+            conn.execute(
+                text(
+                    """
+                    INSERT INTO options (event_id, option)
+                    VALUES
+                        (:event_id, '参加'),
+                        (:event_id, '不参加'),
+                        (:event_id, '途中から参加')
+                    """
+                ),
+                {"event_id": event_id}
+            )
 
   def convert_to_datetime(self, time_field):
     if isinstance(time_field, datetime):

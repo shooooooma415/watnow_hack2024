@@ -4,7 +4,8 @@ from model.event import PostEvent,EventResponse,Events
 from model.profile import Profile
 from model.auth import Login,SucessResponse,SignUp
 from model.attendances import Attendances,AttendancesResponse
-from repository.event import EventRepo
+from repository.get_event import GetEvent
+from repository.put_event import PutEvent
 from service.event import EventService
 import os
 from dotenv import load_dotenv
@@ -19,9 +20,11 @@ load_dotenv()
 app = FastAPI()
 supabase_url = os.getenv('SUPABASE_URL')
 engine = create_engine(supabase_url)
-event_repo = EventRepo(supabase_url)
+get_event = GetEvent(supabase_url)
+put_event = PutEvent(supabase_url)
 push_service = PushService(supabase_url)
 event = EventService(supabase_url)
+
 
 
 @app.get("/")
@@ -54,7 +57,7 @@ def get_events_board():
 
 @app.post("/events", response_model=EventResponse)
 def add_event(input: PostEvent):
-    event_response = event_repo.add_events(input)
+    event_response = put_event.add_events(input)
     return event_response
 
 @app.get("/users/{user_id}/profile",response_model=Profile)

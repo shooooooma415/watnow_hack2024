@@ -35,9 +35,8 @@ class PostEvent(BaseModel):
     latitude: float
     longitude: float
     author_id: int
-    options: Optional[List[Option]] = None
 
-class GetEvent(BaseModel):
+class FetchEvent(BaseModel):
     title: Optional[str] = None
     author: Optional[Author] = None
     description: Optional[str] = None
@@ -54,7 +53,7 @@ class GetEvent(BaseModel):
 
 
 class Events(BaseModel):
-    events: Optional[List[GetEvent]] = None
+    events: Optional[List[FetchEvent]] = None
     
 class EventResponse(BaseModel):
     event_id: int

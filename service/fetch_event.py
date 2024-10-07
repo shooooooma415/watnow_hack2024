@@ -6,13 +6,13 @@ from sqlalchemy import create_engine
 class EventService():
     def __init__(self, supabase_url: str):
         self.engine = create_engine(supabase_url)
-        self.event_repo = GetEvent(supabase_url)
+        self.get_event = GetEvent(supabase_url)
 
     def fetch_option(self, event_id: int) -> List[Option]:
         response = []
-        option_dict = self.event_repo.get_option(event_id)
+        option_dict = self.get_event.get_option(event_id)
         for option_id, title in option_dict.items():
-            participants = self.event_repo.get_participants(option_id)
+            participants = self.get_event.get_participants(option_id)
             if participants:
                 participant_list = Participants(participants=participants.participants)
             else:
@@ -32,8 +32,8 @@ class EventService():
     def fetch_event(self, event_id: int) -> FetchEvent:
         options = self.fetch_option(event_id)
 
-        author = self.event_repo.get_author(event_id)
-        table_event = self.event_repo.get_event(event_id)
+        author = self.get_event.get_author(event_id)
+        table_event = self.get_event.get_event(event_id)
 
         event = FetchEvent(
             id=event_id,
@@ -55,7 +55,7 @@ class EventService():
 
 
     def fetch_all_events(self) -> Events:
-        event_ids = self.event_repo.get_event_id()
+        event_ids = self.get_event.get_event_id()
         event_list = []
         for event_id in event_ids:
             event = self.fetch_event(event_id)

@@ -6,13 +6,14 @@ from model.auth import SignUp
 from model.attendances import Attendances,AttendancesResponse
 from repository.get_event import GetEvent
 from repository.add_event import AddEvent
-from service.event import EventService
+from service.fetch_event import EventService
 import os
 from dotenv import load_dotenv
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi import Request, status
 from repository.push_service import PushService
+import json
 
 load_dotenv()
 
@@ -58,7 +59,7 @@ def get_events_board():
 def add_events_board(input: PostEvent):
     event_id = add_event.add_events(input)
     add_event.add_option(event_id)
-    response = EventResponse(event_id=event_id, message="イベントが作成されました")
+    response = EventResponse(event_id=event_id, message="Event created successfully")
     return response
 
 # @app.get("/users/{user_id}/profile",response_model=Profile)
@@ -110,6 +111,6 @@ def send_message():
 @app.websocket("/ws/ranking")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    pass
+    message = json.loads(data)
 
 # send_message()

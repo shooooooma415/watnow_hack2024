@@ -1,18 +1,21 @@
-from fastapi import FastAPI,WebSocket
+from fastapi import FastAPI,WebSocket,Request,status,HTTPException
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine, text
-from model.event import PostEvent,Events,EventResponse
+from model.event import PostEvent,Events,EventResponse,Location
 from model.profile import Profile
 from model.auth import SignUp
 from model.attendances import Attendances,AttendancesResponse
 from repository.get_event import GetEvent
 from repository.add_event import AddEvent
+from repository.push_service import PushService
 from service.fetch_event import EventService
+from service.websocket import WebSocketService
+from service.fetch_profile import ProfileServise
 import os
 from dotenv import load_dotenv
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
-from fastapi import Request, status
-from repository.push_service import PushService
+from typing import List, Dict
+from datetime import datetime, timedelta
 import json
 
 load_dotenv()
@@ -22,8 +25,10 @@ supabase_url = os.getenv('SUPABASE_URL')
 engine = create_engine(supabase_url)
 get_event = GetEvent(supabase_url)
 add_event = AddEvent(supabase_url)
-push_service = PushService(supabase_url)
 event = EventService(supabase_url)
+push_service = PushService(supabase_url)
+websocket_service = WebSocketService(supabase_url)
+profile_service = ProfileServise(supabase_url)
 
 
 
@@ -62,26 +67,14 @@ def add_events_board(input: PostEvent):
     response = EventResponse(event_id=event_id, message="Event created successfully")
     return response
 
-# @app.get("/users/{user_id}/profile",response_model=Profile)
-# def get_profile(user_id: int):
-#     with engine.connect() as conn:
-#         query = text("SELECT * FROM users WHERE id = :user_id")
-#         result = conn.execute(query, {"user_id": user_id}).mappings()
-#         name = result['name']
-        
-#     return Profile()
-
-@app.get("/users/{user_id}/name")
-def get_name(user_id: int):
-    with engine.connect() as conn:
-        query = text("SELECT name FROM users WHERE id = :user_id")
-        result = conn.execute(query, {"user_id": user_id}).mappings().first()
-
-        if result:
-            name = result['name']
-            return {"name": name}
-        else:
-            return {"error": "User not found"}       
+@app.get("/users/{user_id}/profile",response_model=Profile)
+def get_name(user_id: int,):
+    profile = profile_service.fetch_profile(user_id)
+    
+    if profile is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return profile
 
 @app.put("/users/{user_id}/profile")
 def renew_profile():
@@ -111,6 +104,53 @@ def send_message():
 @app.websocket("/ws/ranking")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    message = json.loads(data)
+    
+    connected_clients: Dict[str, WebSocket] = {}
+    user_locations: Dict[str, Location] = {}
+    user_distances: Dict[str, float] = {}
+    
+    
+    event_deadline_time = websocket_service.calculate_deadline_time(event_id)
+    
+    while True:
+        try:
+            while True:
+                if datetime.now() >= event_deadline_time:
+                    finish_message = {
+                        "action": "tikokulympic_finished",
+                        "message": "この遅刻リンピックは終了しました。"
+                    }
+                    
+                    for client_websocket in connected_clients.values():
+                        await client_websocket.send_text(json.dumps(finish_message))
+                    
+                    for client_websocket in connected_clients.values():
+                        await client_websocket.close()
+                    break
+            
+            data = await websocket.receive_text()
+            message = json.loads(data)
+            if message["action"] == "update_location":
+                user_id = message["user_id"]
+                latitude = float(message["latitude"])
+                longitude = float(message["longitude"])
+                
+                user_locations[user_id] = Location(latitude=latitude, longitude=longitude)
+                
+                distance = websocket_service.calculate_distance(event_id,user_locations[user_id])
+                user_distances[user_id] = distance
+                
+                await websocket_service.send_ranking(websocket, user_distances)
+                
+            elif message["action"] == "get_ranking":
+                await websocket_service.send_ranking(websocket,user_distances)
+            
+            elif message["action"] == "arrival_notification":
+                return None
+                
+        except Exception as e:
+            print(f"Error: {e}")
+            await websocket.close()
+            break
 
 # send_message()

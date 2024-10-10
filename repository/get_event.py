@@ -1,6 +1,7 @@
 from model.event import User,Participants,Author,FetchEvent,Location
 from sqlalchemy import create_engine, text
 from typing import List,Dict,Optional
+from datetime import datetime
 
 class GetEvent():
     def __init__(self, supabase_url: str):
@@ -123,5 +124,14 @@ class GetEvent():
             location = Location(latitude = latitude,
                                 longitude = longitude
                                 )
-        
         return location
+    
+    def get_start_time(self,event_id:str) ->Optional[datetime]:
+        with self.engine.connect() as conn:
+            result = conn.execute(text("SELECT start_date_time FROM events WHERE id = :event_id"), 
+                                    {"event_id": event_id}).mappings().first()
+            start_time = result.get("start_date_time")
+        if result is None:
+            return None
+        
+        return start_time

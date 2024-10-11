@@ -34,7 +34,7 @@ profile_service = ProfileServise(supabase_url)
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {"Hello": "うぃっす〜"}
 
 @app.exception_handler(RequestValidationError)
 async def handler(request:Request, exc:RequestValidationError):

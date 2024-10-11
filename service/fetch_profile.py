@@ -1,6 +1,7 @@
 from model.profile import Delay,Profile
 from repository.get_profile import GetProfile
 from datetime import timedelta
+import datetime
 from typing import Optional
 
 class ProfileServise():
@@ -11,7 +12,7 @@ class ProfileServise():
         delay_time = self.get_profile.get_delay_time(user_id)
         
         if delay_time is None:
-            none_response = Delay(total_late_time = timedelta(seconds=0), 
+            none_response = Delay(total_late_time = 0, 
                         late_count = 0, 
                         on_time_count = 0, 
                         late_percentage = 0)
@@ -31,7 +32,9 @@ class ProfileServise():
         participate_count = late_p + on_time_p
         late_rate = late_p / participate_count *100
         
-        return Delay(total_late_time = total_late, 
+        total_late_minutes = int (total_late.total_seconds() / 60)
+        
+        return Delay(total_late_time = total_late_minutes, 
                         late_count = late_p, 
                         on_time_count = on_time_p, 
                         late_percentage = late_rate)

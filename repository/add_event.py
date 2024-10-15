@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List,Dict,Optional
 
 class AddEvent():
-  def __init__(self, supabase_url: str):
+  def __init__(self, supabase_url: str) -> None:
     self.engine = create_engine(supabase_url)
 
   def add_events(self, input: PostEvent):

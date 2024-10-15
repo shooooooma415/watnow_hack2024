@@ -1,10 +1,10 @@
 from model.event import User,Participants,Author,FetchEvent,Location
 from sqlalchemy import create_engine, text
 from typing import List,Dict,Optional
-from datetime import datetime
+from datetime import datetime,timezone,timedelta
 
 class GetEvent():
-    def __init__(self, supabase_url: str):
+    def __init__(self, supabase_url: str) -> None:
         self.engine = create_engine(supabase_url)
     
     def get_option(self, event_id: int) -> Dict[int, str]:
@@ -91,6 +91,7 @@ class GetEvent():
             closing_date_time = result.get('closing_date_time')
             
             event_data = FetchEvent(
+                id = event_id,
                 title=result.get('title'),
                 description=result.get('description'),
                 is_all_day=is_all_day, 
@@ -135,3 +136,21 @@ class GetEvent():
             return None
         
         return start_time
+    
+    def get_tomorrow_event_id(self) -> List[int]:
+        dt_now = datetime.now(timezone.utc)
+        dt_2days_later = dt_now + timedelta(days=2)
+        lower = dt_now.replace(hour=23, minute=59, second=59)
+        upper = dt_2days_later.replace(hour=0, minute=0, second=0)
+        print(text("SELECT id FROM events WHERE :lower < start_date_time AND start_date_time < :upper"),
+                {"lower": lower, "upper": upper})
+        with self.engine.connect() as conn:
+            query = conn.execute(
+                text("SELECT id FROM events WHERE :lower < start_date_time AND start_date_time < :upper"),
+                {"lower": lower, "upper": upper}
+            )
+            result = query.fetchall()
+            print(f"クエリ結果: {result}")
+            notification_event_id_list = [row[0] for row in result]
+        
+        return notification_event_id_list

@@ -4,7 +4,7 @@ from model.event import FetchEvent, Events,Option
 from sqlalchemy import create_engine
 
 class EventService():
-    def __init__(self, supabase_url: str):
+    def __init__(self, supabase_url: str) -> None:
         self.engine = create_engine(supabase_url)
         self.get_event = GetEvent(supabase_url)
 

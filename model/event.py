@@ -37,6 +37,7 @@ class PostEvent(BaseModel):
     author_id: int
 
 class FetchEvent(BaseModel):
+    id: Optional[int] = None
     title: Optional[str] = None
     author: Optional[Author] = None
     description: Optional[str] = None

@@ -5,7 +5,7 @@ import datetime
 from typing import Optional
 
 class ProfileServise():
-    def __init__(self, supabase_url: str):
+    def __init__(self, supabase_url: str) -> None:
         self.get_profile = GetProfile(supabase_url)
         
     def calculate_late_time(self,user_id) -> Delay:

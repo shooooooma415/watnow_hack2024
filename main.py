@@ -101,14 +101,13 @@ def send_message():
         response_list.append(response)
     return response_list
 
-@app.websocket("/ws/ranking")
-async def websocket_endpoint(websocket: WebSocket):
+@app.websocket("/ws/ranking/{event_id}")
+async def websocket_endpoint(websocket: WebSocket,event_id:int):
     await websocket.accept()
     
     connected_clients: Dict[str, WebSocket] = {}
     user_locations: Dict[str, Location] = {}
     user_distances: Dict[str, float] = {}
-    
     
     event_deadline_time = websocket_service.calculate_deadline_time(event_id)
     
@@ -146,11 +145,15 @@ async def websocket_endpoint(websocket: WebSocket):
                 await websocket_service.send_ranking(websocket,user_distances)
             
             elif message["action"] == "arrival_notification":
+                user_id = message["user_id"]
+                if user_id in connected_clients:
+                    client_websocket = connected_clients[user_id]
+                    await client_websocket.close()
+                    del connected_clients[user_id]
+                
                 return None
                 
         except Exception as e:
             print(f"Error: {e}")
             await websocket.close()
             break
-
-# send_message()

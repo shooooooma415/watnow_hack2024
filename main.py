@@ -11,6 +11,7 @@ from repository.add_event import AddEvent
 from service.fetch_event import EventService
 from service.websocket import WebSocketService
 from service.fetch_profile import ProfileService
+from service.notification import today_event_id_list
 import os
 from dotenv import load_dotenv
 from typing import List, Dict
@@ -93,10 +94,10 @@ def send_arrival_time_info(event_id: int, user_id: int):
         else:
             return AttendancesResponse(message="No attendance found for this event and user.")
         
-@app.websocket("/ws/ranking/{event_id}")
-async def websocket_endpoint(websocket: WebSocket,event_id:int):
+@app.websocket("/ws/ranking")
+async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    
+    event_id = today_event_id_list.pop(0)
     connected_clients: Dict[str, WebSocket] = {}
     user_locations: Dict[str, Location] = {}
     user_distances: Dict[str, float] = {}

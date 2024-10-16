@@ -4,18 +4,17 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine, text
 from model.event import PostEvent,Events,EventResponse,Location
 from model.profile import Profile
-from model.auth import SignUp
+from model.auth import SignUp,SuccessResponse
 from model.attendances import Attendances,AttendancesResponse
 from repository.get_event import GetEvent
 from repository.add_event import AddEvent
-from repository.push_service import PushService
 from service.fetch_event import EventService
 from service.websocket import WebSocketService
-from service.fetch_profile import ProfileServise
+from service.fetch_profile import ProfileService
 import os
 from dotenv import load_dotenv
 from typing import List, Dict
-from datetime import datetime, timedelta
+from datetime import datetime
 import json
 
 load_dotenv()
@@ -26,9 +25,8 @@ engine = create_engine(supabase_url)
 get_event = GetEvent(supabase_url)
 add_event = AddEvent(supabase_url)
 event = EventService(supabase_url)
-push_service = PushService(supabase_url)
 websocket_service = WebSocketService(supabase_url)
-profile_service = ProfileServise(supabase_url)
+profile_service = ProfileService(supabase_url)
 
 
 
@@ -67,8 +65,12 @@ def add_events_board(input: PostEvent):
     response = EventResponse(event_id=event_id, message="Event created successfully")
     return response
 
+@app.post("/events/{event_id}/votes",response_model=SuccessResponse)
+def votes(event_id: int):
+    pass
+
 @app.get("/users/{user_id}/profile",response_model=Profile)
-def get_name(user_id: int,):
+def get_name(user_id: int):
     profile = profile_service.fetch_profile(user_id)
     
     if profile is None:
@@ -91,16 +93,6 @@ def send_arrival_time_info(event_id: int, user_id: int):
         else:
             return AttendancesResponse(message="No attendance found for this event and user.")
         
-
-@app.get("/send")
-def send_message():
-    event_id_list = push_service.get_event_id()
-    response_list = []
-    for event_id in event_id_list:
-        response = push_service.send_notification(event_id)
-        response_list.append(response)
-    return response_list
-
 @app.websocket("/ws/ranking/{event_id}")
 async def websocket_endpoint(websocket: WebSocket,event_id:int):
     await websocket.accept()

@@ -7,3 +7,4 @@ class Attendances(BaseModel):
 
 class AttendancesResponse(BaseModel):
     message:str
+    

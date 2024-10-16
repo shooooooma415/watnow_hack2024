@@ -154,3 +154,43 @@ class GetEvent():
             notification_event_id_list = [row[0] for row in result]
         
         return notification_event_id_list
+    
+    def get_attend_option_id(self, event_id: int) -> List[int]:
+        option_id_list = []
+        with self.engine.connect() as conn:
+            result = conn.execute(text(
+                "SELECT o.id FROM events e JOIN options o ON e.id = o.event_id WHERE e.id = :id AND o.option = '参加'"),
+                {"id": event_id}
+            ).fetchall()
+            
+            for row in result:
+                option_id_list.append(row[0])
+        
+        print(f"取得したオプションIDリスト: {option_id_list}")
+        return option_id_list
+    
+    def get_event_title(self,event_id:int) -> Optional[str]:
+        with self.engine.connect() as conn:
+            query = conn.execute(
+                text("SELECT title FROM events WHERE id = :id"),
+                {"id": event_id}
+            ).mappings()
+            
+            result = query.fetchone()
+            event_title = result['title']
+        return event_title
+    
+    def get_notification_event_id(self) -> List[int]:
+        dt_now = datetime.now(timezone.utc)
+        dt_2days_later = dt_now + timedelta(days=2)
+        lower = dt_now.replace(hour=23, minute=59, second=59)
+        upper = dt_2days_later.replace(hour=0, minute=0, second=0)
+        with self.engine.connect() as conn:
+            query = conn.execute(
+                text("SELECT id FROM events WHERE :lower < start_date_time AND start_date_time < :upper"),
+                {"lower": lower, "upper": upper}
+            )
+            result = query.fetchall()
+            notification_event_id_list = [row[0] for row in result]
+        
+        return notification_event_id_list

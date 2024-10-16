@@ -2,12 +2,11 @@ from repository.get_event import GetEvent
 from repository.get_profile import GetProfile
 import firebase_admin
 from firebase_admin import messaging,credentials
-
+from main import today_event_id_list
 # cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 
-today_event_id_list = []
 
 class Notification():
     def __init__(self,supabase_url: str) -> None:
@@ -33,7 +32,7 @@ class Notification():
         event_id_list = self.get_event.get_notification_event_id()
         response_list = []
         for event_id in event_id_list:
-            event_id_list_global.append(event_id)
+            today_event_id_list.append(event_id)
             response = self.send_notification(event_id)
             response_list.append(response)
-        return response_list
+        return event_id_list

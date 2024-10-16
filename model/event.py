@@ -63,3 +63,6 @@ class EventResponse(BaseModel):
 class Location(BaseModel):
     latitude: Optional[float]
     longitude: Optional[float]
+    
+class EventID(BaseModel):
+    event_id: int

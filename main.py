@@ -12,6 +12,7 @@ from service.fetch_event import EventService
 from service.websocket import WebSocketService
 from service.fetch_profile import ProfileService
 from send_message import NotificationService
+from config import today_event_id_list
 import os
 from dotenv import load_dotenv
 from typing import List, Dict
@@ -30,9 +31,6 @@ event = EventService(supabase_url)
 websocket_service = WebSocketService(supabase_url)
 profile_service = ProfileService(supabase_url)
 notification_service = NotificationService(supabase_url,SERVER_URL)
-
-today_event_id_list: List[int] = []
-
 
 @app.get("/")
 def read_root():

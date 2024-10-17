@@ -3,7 +3,7 @@ from repository.get_profile import GetProfile
 from repository.get_attendance import GetAttendance
 import firebase_admin
 from firebase_admin import messaging,credentials
-from main import today_event_id_list
+from config import today_event_id_list
 # cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)

@@ -1,5 +1,5 @@
 from service.notification import Notification
-from main import today_event_id_list
+from config import today_event_id_list
 import os
 import requests
 

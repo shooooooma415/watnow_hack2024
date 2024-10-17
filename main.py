@@ -160,9 +160,9 @@ async def websocket_endpoint(websocket: WebSocket):
                     await client_websocket.close()
 
     except Exception as e:
-        await websocket.close()
         print(f"WebSocket error: {e}")
         
 # @app.get("/check")
 # def read_root():
 #     return today_event_id_list
+

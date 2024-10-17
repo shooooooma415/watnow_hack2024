@@ -40,30 +40,23 @@ class WebSocketService:
         return response
     
     async def send_ranking(self, websocket, user_distances: Dict[int, float]):
-        # user_distances をリストに変換してソート
         sorted_distances = sorted(
             [{"user_id": user_id, "distance": distance} for user_id, distance in user_distances.items()],
             key=lambda x: x['distance'], reverse=True
         )
-        
-        # ランキングを生成
         ranking = [
             {
                 "position": idx + 1,
                 "user_id": user['user_id'],
-                "alias": None,  # alias が存在する場合はここに追加
+                "alias": None, 
                 "distance": user['distance']
             }
             for idx, user in enumerate(sorted_distances)
         ]
-        
-        # ランキングメッセージを作成
         ranking_message = {
             "action": "ranking_update",
             "ranking": ranking
         }
-        
-        # WebSocket を通してランキングを送信
         await websocket.send_text(json.dumps(ranking_message))
         
     def calculate_deadline(self,event_id:str) -> Optional[datetime]:

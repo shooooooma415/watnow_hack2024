@@ -1,7 +1,5 @@
 from model.event import PostEvent
 from sqlalchemy import create_engine, text
-from datetime import datetime
-from typing import List,Dict,Optional
 
 class AddEvent():
   def __init__(self, supabase_url: str) -> None:
@@ -64,8 +62,3 @@ class AddEvent():
                 ),
                 {"event_id": event_id}
             )
-
-  def convert_to_datetime(self, time_field):
-    if isinstance(time_field, datetime):
-      return time_field
-    return datetime.combine(datetime.today(), time_field)

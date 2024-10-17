@@ -4,8 +4,8 @@ from repository.get_attendance import GetAttendance
 import firebase_admin
 from firebase_admin import messaging,credentials
 from config import today_event_id_list
-# cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
-cred = credentials.Certificate("serviceAccountKey.json")
+cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
+# cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 
 

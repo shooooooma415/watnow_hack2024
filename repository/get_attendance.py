@@ -1,7 +1,6 @@
-from model.event import User,Participants,Author,FetchEvent,Location
+from model.event import User,Participants
 from sqlalchemy import create_engine, text
 from typing import List,Dict,Optional
-from datetime import datetime,timezone,timedelta
 
 class GetAttendance():
     def __init__(self,supabase_url:str) -> None:
@@ -51,8 +50,6 @@ class GetAttendance():
             
             for row in result:
                 option_id_list.append(row[0])
-        
-        print(f"取得したオプションIDリスト: {option_id_list}")
         return option_id_list
     
     def get_option_id(self,event_id:str):

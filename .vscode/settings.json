@@ -1,5 +1,7 @@
 {
     "cSpell.words": [
+        "dlat",
+        "dlon",
         "dotenv",
         "fastapi",
         "pydantic",

@@ -1,4 +1,5 @@
 from repository.get_event import GetEvent,Location
+from repository.get_profile import GetProfile
 from math import radians, sin, cos, sqrt, atan2
 from sqlalchemy import create_engine
 from typing import Optional,List,Dict
@@ -9,6 +10,7 @@ class WebSocketService:
     def __init__(self,supabase_url:str):
         self.engine = create_engine(supabase_url)
         self.get_event = GetEvent(supabase_url)
+        self.get_profile = GetProfile(supabase_url)
     
     def haversine_distance(self,lat1:float, lon1:float, lat2:float, lon2:float) -> float:
         R = 6371.0
@@ -40,6 +42,7 @@ class WebSocketService:
         return response
     
     async def send_ranking(self, websocket, user_distances: Dict[int, float]):
+        self.get_profile.get_name
         sorted_distances = sorted(
             [{"user_id": user_id, "distance": distance} for user_id, distance in user_distances.items()],
             key=lambda x: x['distance'], reverse=True
@@ -48,6 +51,7 @@ class WebSocketService:
             {
                 "position": idx + 1,
                 "user_id": user['user_id'],
+                "name": self.get_profile.get_name(user['user_id']),
                 "alias": None, 
                 "distance": user['distance']
             }
@@ -57,7 +61,7 @@ class WebSocketService:
             "action": "ranking_update",
             "ranking": ranking
         }
-        await websocket.send_text(json.dumps(ranking_message))
+        await websocket.send_text(json.dumps(ranking_message, ensure_ascii=False))
         
     def calculate_deadline(self,event_id:str) -> Optional[datetime]:
         start_time = self.get_event.get_start_time(event_id)

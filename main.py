@@ -11,6 +11,7 @@ from repository.add_event import AddEvent
 from service.fetch_event import EventService
 from service.websocket import WebSocketService
 from service.fetch_profile import ProfileService
+from send_message import NotificationService
 import os
 from dotenv import load_dotenv
 from typing import List, Dict
@@ -18,6 +19,7 @@ from datetime import datetime,timezone
 import json
 
 load_dotenv()
+SERVER_URL = "https://watnow-hack2024.onrender.com"
 
 app = FastAPI()
 supabase_url = os.getenv('SUPABASE_URL')
@@ -27,6 +29,7 @@ add_event = AddEvent(supabase_url)
 event = EventService(supabase_url)
 websocket_service = WebSocketService(supabase_url)
 profile_service = ProfileService(supabase_url)
+notification_service = NotificationService(supabase_url,SERVER_URL)
 
 today_event_id_list: List[int] = []
 
@@ -166,3 +169,7 @@ async def websocket_endpoint(websocket: WebSocket):
 # def read_root():
 #     return today_event_id_list
 
+@app.get("/send/message")
+def notification():
+    notification_service.send_event_ids()
+    return True

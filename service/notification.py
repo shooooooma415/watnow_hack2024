@@ -3,9 +3,9 @@ from repository.get_profile import GetProfile
 from repository.get_attendance import GetAttendance
 import firebase_admin
 from firebase_admin import messaging,credentials
-from config import today_event_id_list
-cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
-# cred = credentials.Certificate("serviceAccountKey.json")
+
+# cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
+cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 
 
@@ -30,11 +30,9 @@ class Notification():
         response = messaging.send_multicast(message)
         return response
     
-    def send_messages(self):
-        event_id_list = self.get_event.get_notification_event_id()
-        response_list = []
-        for event_id in event_id_list:
-            today_event_id_list.append(event_id)
-            response = self.send_notification(event_id)
-            response_list.append(response)
+    def send_messages(self, event_id_list:list[str]):
+        event_list = self.get_event.get_notification_event_id()
+        for event_id in event_list:
+            event_id_list.append(event_id)
+            self.send_notification(event_id)
         return event_id_list

@@ -12,7 +12,6 @@ from service.fetch_event import EventService
 from service.websocket import WebSocketService
 from service.fetch_profile import ProfileService
 from send_message import NotificationService
-from config import today_event_id_list
 import os
 from dotenv import load_dotenv
 from typing import List, Dict
@@ -20,7 +19,7 @@ from datetime import datetime,timezone
 import json
 
 load_dotenv()
-SERVER_URL = "https://watnow-hack2024.onrender.com"
+SERVER_URL = "http://127.0.0.1:8000"
 
 app = FastAPI()
 supabase_url = os.getenv('SUPABASE_URL')
@@ -31,6 +30,8 @@ event = EventService(supabase_url)
 websocket_service = WebSocketService(supabase_url)
 profile_service = ProfileService(supabase_url)
 notification_service = NotificationService(supabase_url,SERVER_URL)
+
+today_event_id_list: List[int] = []
 
 @app.get("/")
 def read_root():
@@ -107,7 +108,8 @@ async def websocket_endpoint(websocket: WebSocket):
     connected_clients: Dict[int, WebSocket] = {}
     user_locations: Dict[int, Location] = {}
     user_distances: Dict[int, float] = {}
-
+    
+    today_event_id_list.append(37)
     event_id = today_event_id_list[0]
     event_deadline_time = websocket_service.calculate_deadline(event_id)
     
@@ -163,11 +165,11 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         print(f"WebSocket error: {e}")
         
-# @app.get("/check")
-# def read_root():
-#     return today_event_id_list
+@app.get("/check")
+def read_root():
+    return today_event_id_list
 
 @app.get("/send/message")
 def notification():
-    notification_service.send_event_ids()
-    return True
+    response = notification_service.send_event_ids(today_event_id_list)
+    return response

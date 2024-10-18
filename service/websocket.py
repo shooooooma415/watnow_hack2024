@@ -1,5 +1,6 @@
 from repository.get_event import GetEvent,Location
 from repository.get_profile import GetProfile
+from repository.get_distance import GetDistance
 from math import radians, sin, cos, sqrt, atan2
 from sqlalchemy import create_engine
 from typing import Optional,List,Dict
@@ -11,6 +12,7 @@ class WebSocketService:
         self.engine = create_engine(supabase_url)
         self.get_event = GetEvent(supabase_url)
         self.get_profile = GetProfile(supabase_url)
+        self.get_distance = GetDistance(supabase_url)
     
     def haversine_distance(self,lat1:float, lon1:float, lat2:float, lon2:float) -> float:
         R = 6371.0
@@ -41,10 +43,11 @@ class WebSocketService:
         response = round(distance, 1)
         return response
     
-    async def send_ranking(self, websocket, user_distances: Dict[int, float]):
+    async def send_ranking(self, websocket):
+        distance_dict = self.get_distance.get_all_distance()
         sorted_distances = sorted(
-            [{"user_id": user_id, "distance": distance} for user_id, distance in user_distances.items()],
-            key=lambda x: x['distance'], reverse=True
+        [{"user_id": user_id, "distance": distance} for user_id, distance in distance_dict.items()],
+        key=lambda x: x['distance'], reverse=True
         )
         ranking = [
             {

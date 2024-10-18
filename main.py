@@ -8,6 +8,7 @@ from model.auth import SignUp,SuccessResponse
 from model.attendances import Attendances,AttendancesResponse
 from repository.get_event import GetEvent
 from repository.add_event import AddEvent
+from repository.add_distance import AddDistance
 from service.fetch_event import EventService
 from service.websocket import WebSocketService
 from service.fetch_profile import ProfileService
@@ -27,6 +28,7 @@ add_event = AddEvent(supabase_url)
 event = EventService(supabase_url)
 websocket_service = WebSocketService(supabase_url)
 profile_service = ProfileService(supabase_url)
+add_distance = AddDistance(supabase_url)
 
 today_event_id_list: List[int] = []
 
@@ -104,7 +106,6 @@ async def websocket_endpoint(websocket: WebSocket):
     
     connected_clients: Dict[int, WebSocket] = {}
     user_locations: Dict[int, Location] = {}
-    user_distances: Dict[int, float] = {}
     
     today_event_id_list.append(37)
     event_id = today_event_id_list[0]
@@ -143,14 +144,19 @@ async def websocket_endpoint(websocket: WebSocket):
                 connected_clients[user_id] = websocket
                 latitude = float(message["latitude"])
                 longitude = float(message["longitude"])
+                
                 user_locations[user_id] = Location(latitude=latitude, longitude=longitude)
-
                 distance = websocket_service.calculate_distance(event_id, user_locations[user_id])
-                user_distances[user_id] = distance
-                await websocket_service.send_ranking(websocket, user_distances)
+                
+                if add_distance.is_distance_present(user_id):
+                    add_distance.update_distance(distance,user_id)
+                else:
+                    add_distance.insert_distance(distance,user_id)
+                    
+                await websocket_service.send_ranking(websocket)
 
             elif message["action"] == "get_ranking":
-                await websocket_service.send_ranking(websocket, user_distances)
+                await websocket_service.send_ranking(websocket)
 
             elif message["action"] == "arrival_notification":
                 user_id = message['user_id']

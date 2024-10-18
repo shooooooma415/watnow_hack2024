@@ -51,16 +51,17 @@ class GetAttendance():
                 response = row[0]
         return response
     
-    def get_option_id(self, event_id: int, option:str) -> int:
+    def get_option_id(self, event_id: int, option: str) -> Optional[int]:
         with self.engine.connect() as conn:
             result = conn.execute(text(
                 "SELECT o.id FROM events e JOIN options o ON e.id = o.event_id WHERE e.id = :id AND o.option = :option"),
                 {"id": event_id, "option": option}
-            ).fetchall()
-            
-            for row in result:
-                response = row[0]
-        return response
+            ).fetchone()
+        
+        if result:
+            return result[0]
+        else:
+            return None
     
     def is_option(self,user_id:str, option_id:int) -> Optional[bool]:
         with self.engine.connect() as conn:

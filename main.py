@@ -5,14 +5,17 @@ from sqlalchemy import create_engine, text
 from model.event import PostEvent,Events,EventResponse,Location,EventID
 from model.profile import Profile
 from model.auth import SignUp,SuccessResponse
-from model.attendances import Attendances,AttendancesResponse
+from model.attendances import Attendances,AttendancesResponse,RequestVote
 from repository.get_event import GetEvent
 from repository.add_event import AddEvent
 from repository.add_distance import AddDistance
 from repository.get_distance import GetDistance
+from repository.add_votes import AddVotes
+from repository.get_attendance import GetAttendance
 from service.fetch_event import EventService
 from service.websocket import WebSocketService
 from service.fetch_profile import ProfileService
+from service.vote import Vote
 import os
 from dotenv import load_dotenv
 from typing import List, Dict
@@ -31,6 +34,10 @@ websocket_service = WebSocketService(supabase_url)
 profile_service = ProfileService(supabase_url)
 add_distance = AddDistance(supabase_url)
 get_distance = GetDistance(supabase_url)
+vote = Vote(supabase_url)
+add_votes = AddVotes(supabase_url)
+get_attendance = GetAttendance(supabase_url)
+
 today_event_id_list: List[int] = []
 
 @app.get("/")
@@ -69,8 +76,12 @@ def add_events_board(input: PostEvent):
     return response
 
 @app.post("/events/{event_id}/votes",response_model=SuccessResponse)
-def votes(event_id: int):
-    pass
+def votes(input:RequestVote, event_id:int):
+    vote.delete_vote(event_id,input.user_id)
+    option_id = get_attendance.get_option_id(event_id,input.option)
+    add_votes.insert_vote(option_id,input.user_id)
+    
+    return SuccessResponse(success = True)
 
 @app.get("/users/{user_id}/profile",response_model=Profile)
 def get_name(user_id: int):
@@ -81,7 +92,7 @@ def get_name(user_id: int):
     
     return profile
 
-@app.put("/users/{user_id}/profile")
+@app.post("/users/{user_id}/profile")
 def renew_profile():
     pass
 

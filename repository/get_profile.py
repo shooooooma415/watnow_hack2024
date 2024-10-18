@@ -73,16 +73,14 @@ class GetProfile():
 
         return result["name"]
     
-    def get_token(self, option_id_list: List[int]) -> List[str]:
+    def get_token(self, option_id:int) -> List[str]:
         token_list = []
-        for option_id in option_id_list:
-            print(f"オプションID: {option_id} に対してトークン取得中")
-            with self.engine.connect() as conn:
-                result = conn.execute(
-                    text("""SELECT u.token FROM votes v JOIN users u ON v.user_id = u.id WHERE v.option_id = :id"""),
-                    {"id": option_id}
-                ).fetchall()
-                
-                for row in result:
-                    token_list.append(row[0])
+        with self.engine.connect() as conn:
+            result = conn.execute(
+                text("""SELECT u.token FROM votes v JOIN users u ON v.user_id = u.id WHERE v.option_id = :id"""),
+                {"id": option_id}
+            ).fetchall()
+            
+            for row in result:
+                token_list.append(row[0])
         return token_list

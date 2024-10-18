@@ -40,8 +40,7 @@ class GetAttendance():
                 user_list.append(user_data)
         return Participants(participants=user_list) if user_list else None
     
-    def get_attend_option_id(self, event_id: int) -> List[int]:
-        option_id_list = []
+    def get_attend_option_id(self, event_id: int) -> int:
         with self.engine.connect() as conn:
             result = conn.execute(text(
                 "SELECT o.id FROM events e JOIN options o ON e.id = o.event_id WHERE e.id = :id AND o.option = '参加'"),
@@ -49,20 +48,26 @@ class GetAttendance():
             ).fetchall()
             
             for row in result:
-                option_id_list.append(row[0])
-        return option_id_list
+                response = row[0]
+        return response
     
-    def get_option_id(self,event_id:str):
-        option_id_list = []
+    def get_option_id(self, event_id: int, option:str) -> int:
         with self.engine.connect() as conn:
             result = conn.execute(text(
-                "SELECT o.id FROM events e JOIN options o ON e.id = o.event_id WHERE e.id = :id"),
-                {"id": event_id}
+                "SELECT o.id FROM events e JOIN options o ON e.id = o.event_id WHERE e.id = :id AND o.option = :option"),
+                {"id": event_id, "option": option}
             ).fetchall()
             
             for row in result:
-                option_id_list.append(row[0])
-        return option_id_list
+                response = row[0]
+        return response
     
-    def is_vote(self,user_id:str,option_id_list:list[int]) -> Optional[bool]:
-        pass
+    def is_option(self,user_id:str, option_id:int) -> Optional[bool]:
+        with self.engine.connect() as conn:
+            result = conn.execute(text(
+                "SELECT * FROM votes WHERE user_id = :user_id AND option_id = :option_id"),
+                {"user_id": user_id, "option_id": option_id}
+            ).fetchone()
+            if result is None:
+                return False
+            return True

@@ -9,6 +9,7 @@ from model.attendances import Attendances,AttendancesResponse
 from repository.get_event import GetEvent
 from repository.add_event import AddEvent
 from repository.add_distance import AddDistance
+from repository.get_distance import GetDistance
 from service.fetch_event import EventService
 from service.websocket import WebSocketService
 from service.fetch_profile import ProfileService
@@ -29,7 +30,7 @@ event = EventService(supabase_url)
 websocket_service = WebSocketService(supabase_url)
 profile_service = ProfileService(supabase_url)
 add_distance = AddDistance(supabase_url)
-
+get_distance = GetDistance(supabase_url)
 today_event_id_list: List[int] = []
 
 @app.get("/")
@@ -148,7 +149,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 user_locations[user_id] = Location(latitude=latitude, longitude=longitude)
                 distance = websocket_service.calculate_distance(event_id, user_locations[user_id])
                 
-                if add_distance.is_distance_present(user_id) == True:
+                if get_distance.is_distance_present(user_id) == True:
                     add_distance.update_distance(distance,user_id)
 
                 else:

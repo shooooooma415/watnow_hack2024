@@ -64,5 +64,5 @@ class GetAttendance():
                 option_id_list.append(row[0])
         return option_id_list
     
-    def verify_vote(self,user_id:str,option_id_list:list[int]) -> Optional[bool]:
+    def is_vote(self,user_id:str,option_id_list:list[int]) -> Optional[bool]:
         pass

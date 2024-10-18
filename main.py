@@ -3,7 +3,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine, text
 from model.event import PostEvent,Events,EventResponse,Location,EventID
-from model.profile import Profile
+from model.profile import Profile,Name
 from model.auth import SignUp,SuccessResponse
 from model.attendances import Attendances,AttendancesResponse,RequestVote
 from repository.get_event import GetEvent
@@ -12,6 +12,7 @@ from repository.add_distance import AddDistance
 from repository.get_distance import GetDistance
 from repository.add_votes import AddVotes
 from repository.get_attendance import GetAttendance
+from repository.update_profile import UpdateProfile
 from service.fetch_event import EventService
 from service.websocket import WebSocketService
 from service.fetch_profile import ProfileService
@@ -37,6 +38,7 @@ get_distance = GetDistance(supabase_url)
 vote = Vote(supabase_url)
 add_votes = AddVotes(supabase_url)
 get_attendance = GetAttendance(supabase_url)
+update_profile = UpdateProfile(supabase_url)
 
 today_event_id_list: List[int] = []
 
@@ -92,9 +94,10 @@ def get_name(user_id: int):
     
     return profile
 
-@app.post("/users/{user_id}/profile")
-def renew_profile():
-    pass
+@app.put("/users/{user_id}/profile/name", response_model=SuccessResponse)
+def renew_profile(input:Name,user_id:int):
+    update_profile.update_name(user_id,input.name)
+    return SuccessResponse(success = True)
 
 @app.post("/attendances/{event_id}/{user_id}",response_model=AttendancesResponse)
 def send_arrival_time_info(event_id: int, user_id: int):

@@ -15,3 +15,6 @@ class Delay(BaseModel):
     late_count: int = None
     on_time_count: int = None
     late_percentage: float = None
+    
+class Name(BaseModel):
+    name: str

@@ -83,7 +83,7 @@ def votes(input:RequestVote, event_id:int):
     option_id = get_attendance.get_option_id(event_id,input.option)
     add_votes.insert_vote(option_id,input.user_id)
     
-    return SuccessResponse(success = True)
+    return SuccessResponse(is_success = True)
 
 @app.get("/users/{user_id}/profile",response_model=Profile)
 def get_name(user_id: int):
@@ -97,7 +97,7 @@ def get_name(user_id: int):
 @app.put("/users/{user_id}/profile/name", response_model=SuccessResponse)
 def renew_profile(input:Name,user_id:int):
     update_profile.update_name(user_id,input.name)
-    return SuccessResponse(success = True)
+    return SuccessResponse(is_success = True)
 
 @app.post("/attendances/{event_id}/{user_id}",response_model=AttendancesResponse)
 def send_arrival_time_info(event_id: int, user_id: int):

@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from typing import Optional,List,Dict
 from datetime import datetime, timedelta
 import json
+from geopy.distance import geodesic
 
 class WebSocketService:
     def __init__(self,supabase_url:str):
@@ -14,16 +15,11 @@ class WebSocketService:
         self.get_profile = GetProfile(supabase_url)
         self.get_distance = GetDistance(supabase_url)
     
-    def haversine_distance(self,lat1:float, lon1:float, lat2:float, lon2:float) -> float:
-        R = 6371.0
-        
-        dlat = radians(lat2 - lat1)
-        dlon = radians(lon2 - lon1)
-        
-        a = sin(dlat / 2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2)**2
-        c = 2 * atan2(sqrt(a), sqrt(1 - a))
-        
-        distance = R * c
+    def haversine_distance(self, lat1:float, lon1:float, lat2:float, lon2:float) -> float:
+        point1 = (lat1, lon1)
+        point2 = (lat2, lon2)
+        distance = geodesic(point1, point2).kilometers
+    
         return distance
     
     def calculate_distance(self, event_id: str, user_location: Location) -> Optional[float]:
@@ -44,10 +40,7 @@ class WebSocketService:
         return response
     
     async def send_ranking(self, websocket):
-        # get_all_distanceメソッドを呼び出して、辞書データを取得
         distance_dict = self.get_distance.get_all_distance()
-
-        # ユーザーIDと距離のリストを作成し、距離でソート
         sorted_distances = sorted(
             [{"user_id": user_id, "distance": distance} for user_id, distance in distance_dict.items()],
             key=lambda x: x['distance'], reverse=True
@@ -58,20 +51,17 @@ class WebSocketService:
             {
                 "position": idx + 1,
                 "user_id": user['user_id'],
-                "name": self.get_profile.get_name(user['user_id']),  # 同期メソッドであればそのまま使用
-                "alias": None,  # 必要に応じて `alias` を設定
+                "name": self.get_profile.get_name(user['user_id']),
+                "alias": None,
                 "distance": user['distance']
             }
             for idx, user in enumerate(sorted_distances)
         ]
 
-        # WebSocketで送信するメッセージ
         ranking_message = {
             "action": "ranking_update",
             "ranking": ranking
         }
-
-        # WebSocketでランキング情報を送信
         await websocket.send_text(json.dumps(ranking_message, ensure_ascii=False))
 
         

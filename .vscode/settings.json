@@ -4,6 +4,7 @@
         "dlon",
         "dotenv",
         "fastapi",
+        "geopy",
         "pydantic",
         "sqlalchemy",
         "supabase",

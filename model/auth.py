@@ -5,7 +5,7 @@ class Login(BaseModel):
     user_id : int
 
 class SuccessResponse(BaseModel):
-    success : bool
+    is_success : bool
 
 class SignUp(BaseModel):
     user_name: str

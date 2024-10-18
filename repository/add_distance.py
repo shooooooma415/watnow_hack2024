@@ -10,23 +10,24 @@ class AddDistance():
                 "SELECT distance FROM locations WHERE user_id = :user_id"),
                 {"user_id": user_id}
             ).fetchone()
-            if result is None:
-                return False 
-            if result['distance'] is None:
+            if result is None or result[0] is None:
                 return False
             
             return True
+
     
     def insert_distance(self, distance:float, user_id:int):
         with self.engine.connect() as conn:
-            conn.execute(text(
-                "INSERT INTO locations (distance, user_id) VALUES (:distance, :user_id)"),
-                {"distance": distance, "user_id": user_id}
-            )
+            with conn.begin():
+                conn.execute(text(
+                    "INSERT INTO locations (distance, user_id) VALUES (:distance, :user_id)"),
+                    {"distance": distance, "user_id": user_id}
+                )
     
     def update_distance(self, distance:float, user_id:int):
         with self.engine.connect() as conn:
-            conn.execute(text(
-                "UPDATE locations SET distance = :distance WHERE user_id = :user_id"),
-                {"distance": distance, "user_id": user_id}
-            )
+            with conn.begin():
+                conn.execute(text(
+                    "UPDATE locations SET distance = :distance WHERE user_id = :user_id"),
+                    {"distance": distance, "user_id": user_id}
+                )

@@ -148,8 +148,9 @@ async def websocket_endpoint(websocket: WebSocket):
                 user_locations[user_id] = Location(latitude=latitude, longitude=longitude)
                 distance = websocket_service.calculate_distance(event_id, user_locations[user_id])
                 
-                if add_distance.is_distance_present(user_id):
+                if add_distance.is_distance_present(user_id) == True:
                     add_distance.update_distance(distance,user_id)
+
                 else:
                     add_distance.insert_distance(distance,user_id)
                     

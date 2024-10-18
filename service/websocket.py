@@ -44,26 +44,36 @@ class WebSocketService:
         return response
     
     async def send_ranking(self, websocket):
+        # get_all_distanceメソッドを呼び出して、辞書データを取得
         distance_dict = self.get_distance.get_all_distance()
+
+        # ユーザーIDと距離のリストを作成し、距離でソート
         sorted_distances = sorted(
-        [{"user_id": user_id, "distance": distance} for user_id, distance in distance_dict.items()],
-        key=lambda x: x['distance'], reverse=True
+            [{"user_id": user_id, "distance": distance} for user_id, distance in distance_dict.items()],
+            key=lambda x: x['distance'], reverse=True
         )
+
+        # ランキング情報を作成
         ranking = [
             {
                 "position": idx + 1,
                 "user_id": user['user_id'],
-                "name": self.get_profile.get_name(user['user_id']),
-                "alias": None, 
+                "name": self.get_profile.get_name(user['user_id']),  # 同期メソッドであればそのまま使用
+                "alias": None,  # 必要に応じて `alias` を設定
                 "distance": user['distance']
             }
             for idx, user in enumerate(sorted_distances)
         ]
+
+        # WebSocketで送信するメッセージ
         ranking_message = {
             "action": "ranking_update",
             "ranking": ranking
         }
+
+        # WebSocketでランキング情報を送信
         await websocket.send_text(json.dumps(ranking_message, ensure_ascii=False))
+
         
     def calculate_deadline(self,event_id:str) -> Optional[datetime]:
         start_time = self.get_event.get_start_time(event_id)

@@ -26,3 +26,11 @@ class GetDistance():
                 distance_dict[row[0]] = row[1]
                 
         return distance_dict
+    
+    def delete_all_distance(self) -> None:
+        with self.engine.connect() as conn:
+            with conn.begin():
+                conn.execute(text(
+                    "DELETE FROM locations"
+                ))
+

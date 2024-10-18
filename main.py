@@ -122,7 +122,7 @@ async def websocket_endpoint(websocket: WebSocket):
     connected_clients: Dict[int, WebSocket] = {}
     user_locations: Dict[int, Location] = {}
     
-    today_event_id_list.append(37)
+    today_event_id_list.append(38)
     event_id = today_event_id_list[0]
     event_deadline_time = websocket_service.calculate_deadline(event_id)
     
@@ -141,10 +141,9 @@ async def websocket_endpoint(websocket: WebSocket):
                     "action": "tikokulympic_finished",
                     "message": "この遅刻リンピックは終了しました。"
                 }
-                
                 for client_websocket in connected_clients.values():
                     await client_websocket.send_text(json.dumps(finish_message))
-
+                get_distance.delete_all_distance()
                 for client_websocket in connected_clients.values():
                     await client_websocket.close()
 

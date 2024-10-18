@@ -58,7 +58,7 @@ class GetProfile():
 
         return result["aliase"]
 
-    def get_name(self, user_id: str) -> Optional[str]:
+    def get_name(self, user_id: int) -> Optional[str]:
         with self.engine.connect() as conn:
             result = conn.execute(
                 text("""

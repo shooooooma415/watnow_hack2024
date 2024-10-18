@@ -42,7 +42,6 @@ class WebSocketService:
         return response
     
     async def send_ranking(self, websocket, user_distances: Dict[int, float]):
-        self.get_profile.get_name
         sorted_distances = sorted(
             [{"user_id": user_id, "distance": distance} for user_id, distance in user_distances.items()],
             key=lambda x: x['distance'], reverse=True

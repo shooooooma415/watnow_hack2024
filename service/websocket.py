@@ -1,9 +1,8 @@
 from repository.get_event import GetEvent,Location
 from repository.get_profile import GetProfile
 from repository.get_distance import GetDistance
-from math import radians, sin, cos, sqrt, atan2
 from sqlalchemy import create_engine
-from typing import Optional,List,Dict
+from typing import Optional
 from datetime import datetime, timedelta
 import json
 from geopy.distance import geodesic

@@ -46,6 +46,10 @@ today_event_id_list: List[int] = []
 def read_root():
     return {"Hello": "うぃっす〜"}
 
+@app.head("/monitor")
+def read_root():
+    return {"Hello": "うぃっす〜"}
+
 @app.exception_handler(RequestValidationError)
 async def handler(request:Request, exc:RequestValidationError):
     print(exc)
@@ -71,11 +75,15 @@ def get_events_board():
 
 
 @app.post("/events",response_model=EventResponse)
-def add_events_board(input: PostEvent):
+def add_event(input: PostEvent):
     event_id = add_event.add_events(input)
     add_event.add_option(event_id)
     response = EventResponse(event_id=event_id, message="Event created successfully")
     return response
+
+@app.delete("/events/{event_id}/delete")
+def delete_event(event_id:int):
+    pass
 
 @app.post("/events/{event_id}/votes",response_model=SuccessResponse)
 def votes(input:RequestVote, event_id:int):

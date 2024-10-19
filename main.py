@@ -75,7 +75,7 @@ def get_events_board():
 
 
 @app.post("/events",response_model=EventResponse)
-def add_event(input: PostEvent):
+def insert_event(input: PostEvent):
     event_id = add_event.add_events(input)
     add_event.add_option(event_id)
     response = EventResponse(event_id=event_id, message="Event created successfully")

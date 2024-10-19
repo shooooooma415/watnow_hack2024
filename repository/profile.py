@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, text
 from typing import Optional,List
 
-class GetProfile():
+class Profile():
     def __init__(self,supabase_url: str) -> None:
         self.engine = create_engine(supabase_url)
     
@@ -84,3 +84,11 @@ class GetProfile():
             for row in result:
                 token_list.append(row[0])
         return token_list
+    
+    def update_name(self,user_id, name):
+        with self.engine.connect() as conn:
+            with conn.begin():
+                conn.execute(text(
+                "UPDATE users SET name = :name WHERE id = :user_id"),
+                {"name": name, "user_id": user_id}
+                )

@@ -1,6 +1,6 @@
 from repository.event import Event,Location
-from repository.get_profile import GetProfile
-from repository.get_distance import GetDistance
+from repository.profile import Profile
+from repository.distance import Distance
 from sqlalchemy import create_engine
 from typing import Optional
 from datetime import datetime, timedelta
@@ -11,8 +11,8 @@ class WebSocketService:
     def __init__(self,supabase_url:str):
         self.engine = create_engine(supabase_url)
         self.event = Event(supabase_url)
-        self.get_profile = GetProfile(supabase_url)
-        self.get_distance = GetDistance(supabase_url)
+        self.profile = Profile(supabase_url)
+        self.distance = Distance(supabase_url)
     
     def haversine_distance(self, lat1:float, lon1:float, lat2:float, lon2:float) -> float:
         point1 = (lat1, lon1)
@@ -39,7 +39,7 @@ class WebSocketService:
         return response
     
     async def send_ranking(self, websocket):
-        distance_dict = self.get_distance.get_all_distance()
+        distance_dict = self.distance.get_all_distance()
         sorted_distances = sorted(
             [{"user_id": user_id, "distance": distance} for user_id, distance in distance_dict.items()],
             key=lambda x: x['distance'], reverse=True
@@ -50,7 +50,7 @@ class WebSocketService:
             {
                 "position": idx + 1,
                 "user_id": user['user_id'],
-                "name": self.get_profile.get_name(user['user_id']),
+                "name": self.profile.get_name(user['user_id']),
                 "alias": None,
                 "distance": user['distance']
             }

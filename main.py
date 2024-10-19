@@ -7,11 +7,9 @@ from model.profile import Profile,Name
 from model.auth import SignUp,SuccessResponse
 from model.attendances import Attendances,AttendancesResponse,RequestVote
 from repository.event import Event
-from repository.add_distance import AddDistance
-from repository.get_distance import GetDistance
+from repository.distance import Distance
 from repository.add_votes import AddVotes
 from repository.get_attendance import GetAttendance
-from repository.update_profile import UpdateProfile
 from service.fetch_event import EventService
 from service.websocket import WebSocketService
 from service.fetch_profile import ProfileService
@@ -31,12 +29,10 @@ event = Event(supabase_url)
 event_service = EventService(supabase_url)
 websocket_service = WebSocketService(supabase_url)
 profile_service = ProfileService(supabase_url)
-add_distance = AddDistance(supabase_url)
-get_distance = GetDistance(supabase_url)
+distances = Distance(supabase_url)
 vote = Vote(supabase_url)
 add_votes = AddVotes(supabase_url)
 get_attendance = GetAttendance(supabase_url)
-update_profile = UpdateProfile(supabase_url)
 
 today_event_id_list: List[int] = []
 
@@ -102,7 +98,7 @@ def get_name(user_id: int):
 
 @app.put("/users/{user_id}/profile/name", response_model=SuccessResponse)
 def renew_profile(input:Name,user_id:int):
-    update_profile.update_name(user_id,input.name)
+    profile.update_name(user_id,input.name)
     return SuccessResponse(is_success = True)
 
 @app.post("/attendances/{event_id}/{user_id}",response_model=AttendancesResponse)
@@ -149,7 +145,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 }
                 for client_websocket in connected_clients.values():
                     await client_websocket.send_text(json.dumps(finish_message))
-                get_distance.delete_all_distance()
+                distances.delete_all_distance()
                 for client_websocket in connected_clients.values():
                     await client_websocket.close()
 
@@ -168,11 +164,11 @@ async def websocket_endpoint(websocket: WebSocket):
                 user_locations[user_id] = Location(latitude=latitude, longitude=longitude)
                 distance = websocket_service.calculate_distance(event_id, user_locations[user_id])
                 
-                if get_distance.is_distance_present(user_id) == True:
-                    add_distance.update_distance(distance,user_id)
+                if distance.is_distance_present(user_id) == True:
+                    distances.update_distance(distance,user_id)
 
                 else:
-                    add_distance.insert_distance(distance,user_id)
+                    distances.insert_distance(distance,user_id)
                     
                 await websocket_service.send_ranking(websocket)
 

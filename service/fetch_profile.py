@@ -1,15 +1,15 @@
 from model.profile import Delay,Profile
-from repository.get_profile import GetProfile
+from repository.profile import Profile
 from datetime import timedelta
 import datetime
 from typing import Optional
 
 class ProfileService():
   def __init__(self, supabase_url: str) -> None:
-    self.get_profile = GetProfile(supabase_url)
+    self.profile = Profile(supabase_url)
       
   def calculate_late_time(self,user_id) -> Delay:
-    delay_time = self.get_profile.get_delay_time(user_id)
+    delay_time = self.profile.get_delay_time(user_id)
     
     if delay_time is None:
       none_response = Delay(total_late_time = 0, 
@@ -40,8 +40,8 @@ class ProfileService():
                   late_percentage = late_rate)
   
   def fetch_profile(self,user_id) -> Optional[Profile]:
-      alias = self.get_profile.get_aliase(user_id)
-      name = self.get_profile.get_name(user_id)
+      alias = self.profile.get_aliase(user_id)
+      name = self.profile.get_name(user_id)
       late_info = self.calculate_late_time(user_id)
       
       return Profile(

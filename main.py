@@ -77,9 +77,10 @@ def insert_event(input: PostEvent):
     response = EventResponse(event_id=event_id, message="Event created successfully")
     return response
 
-@app.delete("/events/{event_id}/delete")
+@app.delete("/events/{event_id}/delete",response_model=SuccessResponse)
 def delete_event(event_id:int):
-    pass
+    event.delete_event(event_id)
+    return SuccessResponse(is_success = True)
 
 @app.post("/events/{event_id}/votes",response_model=SuccessResponse)
 def votes(input:RequestVote, event_id:int):

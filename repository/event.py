@@ -203,3 +203,9 @@ class Event():
                     ),
                     {"event_id": event_id}
                 )
+                
+    def delete_event(self,event_id):
+        with self.engine.connect() as conn:
+            with conn.begin():
+                conn.execute(
+                    text("DELETE FROM events WHERE id = :event_id"),{"event_id": event_id})

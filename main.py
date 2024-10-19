@@ -167,7 +167,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 user_locations[user_id] = Location(latitude=latitude, longitude=longitude)
                 distance = websocket_service.calculate_distance(event_id, user_locations[user_id])
                 
-                if distance.is_distance_present(user_id) == True:
+                if distances.is_distance_present(user_id) == True:
                     distances.update_distance(distance,user_id)
 
                 else:
@@ -180,10 +180,9 @@ async def websocket_endpoint(websocket: WebSocket):
 
             elif message["action"] == "arrival_notification":
                 user_id = message['user_id']
-                if user_id in connected_clients:
-                    client_websocket = connected_clients[user_id]
-                    del connected_clients[user_id]
-                    await client_websocket.close()
+                distances.delete_distance(user_id)
+                await websocket_service.send_ranking(websocket)
+                
 
     except Exception as e:
         print(f"WebSocket error: {e}")

@@ -49,3 +49,10 @@ class Distance():
                 conn.execute(text(
                     "DELETE FROM locations"
                 ))
+    
+    def delete_distance(self,user_id) -> None:
+        with self.engine.connect() as conn:
+            with conn.begin():
+                conn.execute(text(
+                    "DELETE FROM locations WHERE user_id = :user_id"
+                ),{"user_id":user_id})

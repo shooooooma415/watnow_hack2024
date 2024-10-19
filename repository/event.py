@@ -1,4 +1,4 @@
-from model.event import User,Participants,Author,FetchEvent,Location,PostEvent
+from model.event import User,Participants,Author,FetchEvent,Location,PostEvent,ArrivalTime,ArrivalTimeList
 from sqlalchemy import create_engine, text
 from typing import List,Dict,Optional
 from datetime import datetime,timezone,timedelta
@@ -188,7 +188,7 @@ class Event():
             
         return result_id
 
-    def add_option(self, event_id: str):
+    def add_option(self, event_id: str) -> None:
         with self.engine.connect() as conn:
             with conn.begin():
                 conn.execute(
@@ -202,10 +202,34 @@ class Event():
                         """
                     ),
                     {"event_id": event_id}
-                )
+                    )
                 
-    def delete_event(self,event_id):
+    def delete_event(self,event_id) -> None:
         with self.engine.connect() as conn:
             with conn.begin():
                 conn.execute(
                     text("DELETE FROM events WHERE id = :event_id"),{"event_id": event_id})
+    
+    def insert_arrival_time(self,user_id:int,event_id:int,arrival_time:datetime) -> None:
+        with self.engine.connect() as conn:
+            with conn.begin():
+                conn.execute(
+                    text(
+                        """
+                        INSERT INTO attendances (event_id,user_id,arrival_time) 
+                        VALUES (:event_id,:user_id,:arrival_time)
+                        """
+                    ),
+                    {"event_id": event_id, "user_id": user_id, "arrival_time":arrival_time}
+                    )
+    
+    def get_arrival_time_list(self,event_id) -> ArrivalTimeList:
+        with self.engine.connect() as conn:
+            result = conn.execute(
+                text("SELECT user_id,arrival_time FROM attendances WHERE event_id = :event_id"),
+                {"event_id": event_id}
+            ).mappings().fetchall()
+        arrival_time_list = [ArrivalTime(user_id=row['user_id'], arrival_time=row['arrival_time']) for row in result]
+        return ArrivalTimeList(arrival_time_list=arrival_time_list)
+            
+        

@@ -2,7 +2,7 @@ from fastapi import FastAPI,WebSocket,Request,status,HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine, text
-from model.event import PostEvent,Events,EventResponse,Location,EventID
+from model.event import PostEvent,Events,EventResponse,Location,EventID,ArrivalTimeRanking
 from model.profile import UserProfile,Name
 from model.auth import SignUp,SuccessResponse
 from model.attendances import Attendances,AttendancesResponse,RequestVote
@@ -89,6 +89,11 @@ def votes(input:RequestVote, event_id:int):
     add_votes.insert_vote(option_id,input.user_id)
     
     return SuccessResponse(is_success = True)
+
+@app.get("/events/{event_id}/arrival_ranking",response_model=List[ArrivalTimeRanking])
+def get_arrival_ranking(event_id:int):
+    ranking = event_service.fetch_arrival_time_ranking(event_id)
+    return ranking
 
 @app.get("/users/{user_id}/profile",response_model=UserProfile)
 def get_name(user_id: int):
@@ -182,6 +187,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 user_id = message['user_id']
                 distances.delete_distance(user_id)
                 await websocket_service.send_ranking(websocket)
+                arrival_time = datetime.now()
+                event.insert_arrival_time(user_id,event_id,arrival_time)
                 
 
     except Exception as e:

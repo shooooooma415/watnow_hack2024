@@ -66,3 +66,17 @@ class Location(BaseModel):
     
 class EventID(BaseModel):
     event_id: int
+
+class ArrivalTime(BaseModel):
+    user_id: int
+    arrival_time: datetime
+
+class ArrivalTimeList(BaseModel):
+    arrival_time_list: Optional[List[ArrivalTime]]
+    
+class ArrivalTimeRanking(BaseModel):
+    id: int
+    position:int
+    name: str
+    alias: Optional[str] = None
+    arrival_time: datetime

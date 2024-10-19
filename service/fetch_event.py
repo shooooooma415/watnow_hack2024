@@ -1,7 +1,8 @@
 from repository.event import Event, Participants
 from repository.get_attendance import GetAttendance
+from repository.profile import Profile
 from typing import List
-from model.event import FetchEvent, Events,Option
+from model.event import FetchEvent, Events,Option,ArrivalTime,ArrivalTimeList,ArrivalTimeRanking
 from sqlalchemy import create_engine
 
 class EventService():
@@ -9,6 +10,7 @@ class EventService():
         self.engine = create_engine(supabase_url)
         self.event = Event(supabase_url)
         self.get_attendance = GetAttendance(supabase_url)
+        self.profile = Profile(supabase_url)
 
     def fetch_option(self, event_id: int) -> List[Option]:
         response = []
@@ -63,3 +65,38 @@ class EventService():
             event = self.fetch_event(event_id)
             event_list.append(event)
         return Events(events=event_list)
+    
+    def sort_arrival_time_list(self, event_id: int) -> ArrivalTimeList:
+        arrival_time_list = self.event.get_arrival_time_list(event_id).arrival_time_list
+        
+        if arrival_time_list is None:
+            return ArrivalTimeList(arrival_time_list=[])
+        
+        sorted_arrival_time_list = sorted(arrival_time_list, key=lambda x: x.arrival_time)
+        return ArrivalTimeList(arrival_time_list=sorted_arrival_time_list)
+    
+    def fetch_arrival_time_ranking(self, event_id: int) -> List[ArrivalTimeRanking]:
+        sorted_arrival_time_list = self.sort_arrival_time_list(event_id).arrival_time_list
+        
+        if not sorted_arrival_time_list:
+            return []
+
+        ranking_list = []
+        
+        for idx, arrival_time_obj in enumerate(sorted_arrival_time_list):
+            user_id = arrival_time_obj.user_id
+            name = self.profile.get_name(user_id)
+            alias = self.profile.get_aliase(user_id)
+
+            # ランキングのデータを生成
+            ranking = ArrivalTimeRanking(
+                id=user_id,
+                position=idx + 1,
+                name=name,
+                alias=alias,
+                arrival_time=arrival_time_obj.arrival_time
+            )
+            
+            ranking_list.append(ranking)
+        
+        return ranking_list

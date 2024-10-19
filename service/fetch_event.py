@@ -1,4 +1,4 @@
-from repository.get_event import GetEvent, Participants
+from repository.event import Event, Participants
 from repository.get_attendance import GetAttendance
 from typing import List
 from model.event import FetchEvent, Events,Option
@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 class EventService():
     def __init__(self, supabase_url: str) -> None:
         self.engine = create_engine(supabase_url)
-        self.get_event = GetEvent(supabase_url)
+        self.event = Event(supabase_url)
         self.get_attendance = GetAttendance(supabase_url)
 
     def fetch_option(self, event_id: int) -> List[Option]:
@@ -34,8 +34,8 @@ class EventService():
     def fetch_event(self, event_id: int) -> FetchEvent:
         options = self.fetch_option(event_id)
 
-        author = self.get_event.get_author(event_id)
-        table_event = self.get_event.get_event(event_id)
+        author = self.event.get_author(event_id)
+        table_event = self.event.get_event(event_id)
 
         event = FetchEvent(
             id=event_id,
@@ -57,7 +57,7 @@ class EventService():
 
 
     def fetch_all_events(self) -> Events:
-        event_ids = self.get_event.get_event_id()
+        event_ids = self.event.get_event_id()
         event_list = []
         for event_id in event_ids:
             event = self.fetch_event(event_id)

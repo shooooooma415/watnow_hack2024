@@ -6,8 +6,7 @@ from model.event import PostEvent,Events,EventResponse,Location,EventID
 from model.profile import Profile,Name
 from model.auth import SignUp,SuccessResponse
 from model.attendances import Attendances,AttendancesResponse,RequestVote
-from repository.get_event import GetEvent
-from repository.add_event import AddEvent
+from repository.event import Event
 from repository.add_distance import AddDistance
 from repository.get_distance import GetDistance
 from repository.add_votes import AddVotes
@@ -28,9 +27,8 @@ load_dotenv()
 app = FastAPI()
 supabase_url = os.getenv('SUPABASE_URL')
 engine = create_engine(supabase_url)
-get_event = GetEvent(supabase_url)
-add_event = AddEvent(supabase_url)
-event = EventService(supabase_url)
+event = Event(supabase_url)
+event_service = EventService(supabase_url)
 websocket_service = WebSocketService(supabase_url)
 profile_service = ProfileService(supabase_url)
 add_distance = AddDistance(supabase_url)
@@ -70,14 +68,14 @@ def signup(input:SignUp):
 
 @app.get("/events/board",response_model = Events)
 def get_events_board():
-    events_board = event.fetch_all_events()
+    events_board = event_service.fetch_all_events()
     return events_board
 
 
 @app.post("/events",response_model=EventResponse)
 def insert_event(input: PostEvent):
-    event_id = add_event.add_events(input)
-    add_event.add_option(event_id)
+    event_id = event.add_events(input)
+    event.add_option(event_id)
     response = EventResponse(event_id=event_id, message="Event created successfully")
     return response
 

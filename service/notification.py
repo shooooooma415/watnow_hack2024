@@ -1,4 +1,4 @@
-from repository.get_event import GetEvent
+from repository.event import GetEvent
 from repository.get_profile import GetProfile
 from repository.get_attendance import GetAttendance
 import firebase_admin

@@ -1,4 +1,4 @@
-from repository.get_event import GetEvent,Location
+from repository.event import Event,Location
 from repository.get_profile import GetProfile
 from repository.get_distance import GetDistance
 from sqlalchemy import create_engine
@@ -10,7 +10,7 @@ from geopy.distance import geodesic
 class WebSocketService:
     def __init__(self,supabase_url:str):
         self.engine = create_engine(supabase_url)
-        self.get_event = GetEvent(supabase_url)
+        self.event = Event(supabase_url)
         self.get_profile = GetProfile(supabase_url)
         self.get_distance = GetDistance(supabase_url)
     
@@ -23,7 +23,7 @@ class WebSocketService:
     
     def calculate_distance(self, event_id: str, user_location: Location) -> Optional[float]:
 
-        event_location = self.get_event.get_location(event_id)
+        event_location = self.event.get_location(event_id)
         
         if event_location.latitude is None or event_location.longitude is None:
             raise ValueError(f"Event {event_id} has invalid location data")
@@ -65,6 +65,6 @@ class WebSocketService:
 
         
     def calculate_deadline(self,event_id:str) -> Optional[datetime]:
-        start_time = self.get_event.get_start_time(event_id)
+        start_time = self.event.get_start_time(event_id)
         deadline_time = start_time + timedelta(hours=3)
         return deadline_time

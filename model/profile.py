@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from datetime import timedelta
 from typing import List, Optional
 
-class Profile(BaseModel):
+class UserProfile(BaseModel):
     name: str
     alias: Optional[str] = None
     late_count: int = None

@@ -1,4 +1,4 @@
-from model.profile import Delay,Profile
+from model.profile import Delay,UserProfile
 from repository.profile import Profile
 from datetime import timedelta
 import datetime
@@ -39,12 +39,12 @@ class ProfileService():
                   on_time_count = on_time_p, 
                   late_percentage = late_rate)
   
-  def fetch_profile(self,user_id) -> Optional[Profile]:
+  def fetch_profile(self,user_id) -> Optional[UserProfile]:
       alias = self.profile.get_aliase(user_id)
       name = self.profile.get_name(user_id)
       late_info = self.calculate_late_time(user_id)
       
-      return Profile(
+      return UserProfile(
         name=name,
         alias=alias,
         late_count=late_info.late_count,

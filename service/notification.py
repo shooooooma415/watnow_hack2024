@@ -1,5 +1,5 @@
-from repository.event import GetEvent
-from repository.profile import GetProfile
+from repository.event import Event
+from repository.profile import Profile
 from repository.get_attendance import GetAttendance
 import firebase_admin
 from firebase_admin import messaging,credentials
@@ -12,12 +12,12 @@ firebase_admin.initialize_app(cred)
 
 class Notification():
     def __init__(self,supabase_url: str) -> None:
-        self.get_event = GetEvent(supabase_url)
-        self.profile = GetProfile(supabase_url)
+        self.event = Event(supabase_url)
+        self.profile = Profile(supabase_url)
         self.get_attendance = GetAttendance(supabase_url)
         
     def send_notification(self,event_id: int):
-        event_title = self.get_event.get_event_title(event_id)
+        event_title = self.event.get_event_title(event_id)
         option_id_list = self.get_attendance.get_attend_option_id(event_id)
         token_list = self.profile.get_token(option_id_list)
         
@@ -32,7 +32,7 @@ class Notification():
         return response
     
     def send_messages(self):
-        event_list = self.get_event.get_notification_event_id()
+        event_list = self.event.get_notification_event_id()
         for event_id in event_list:
             today_event_id_list.append(event_id)
             self.send_notification(event_id)

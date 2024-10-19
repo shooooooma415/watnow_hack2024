@@ -3,13 +3,14 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine, text
 from model.event import PostEvent,Events,EventResponse,Location,EventID
-from model.profile import Profile,Name
+from model.profile import UserProfile,Name
 from model.auth import SignUp,SuccessResponse
 from model.attendances import Attendances,AttendancesResponse,RequestVote
 from repository.event import Event
 from repository.distance import Distance
 from repository.add_votes import AddVotes
 from repository.get_attendance import GetAttendance
+from repository.profile import Profile
 from service.fetch_event import EventService
 from service.websocket import WebSocketService
 from service.fetch_profile import ProfileService
@@ -33,6 +34,7 @@ distances = Distance(supabase_url)
 vote = Vote(supabase_url)
 add_votes = AddVotes(supabase_url)
 get_attendance = GetAttendance(supabase_url)
+profile = Profile(supabase_url)
 
 today_event_id_list: List[int] = []
 
@@ -87,14 +89,14 @@ def votes(input:RequestVote, event_id:int):
     
     return SuccessResponse(is_success = True)
 
-@app.get("/users/{user_id}/profile",response_model=Profile)
+@app.get("/users/{user_id}/profile",response_model=UserProfile)
 def get_name(user_id: int):
-    profile = profile_service.fetch_profile(user_id)
+    user_profile = profile_service.fetch_profile(user_id)
     
-    if profile is None:
+    if user_profile is None:
         raise HTTPException(status_code=404, detail="User not found")
     
-    return profile
+    return user_profile
 
 @app.put("/users/{user_id}/profile/name", response_model=SuccessResponse)
 def renew_profile(input:Name,user_id:int):

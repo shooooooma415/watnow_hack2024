@@ -1,8 +1,7 @@
 from model.event import User,Participants,Author,FetchEvent,Location,PostEvent,ArrivalTime,ArrivalTimeList
 from sqlalchemy import create_engine, text
 from typing import List,Dict,Optional
-from datetime import datetime,timedelta
-from pytz import timezone
+from datetime import datetime,timedelta,timezone
 
 class Event():
     def __init__(self, supabase_url: str) -> None:

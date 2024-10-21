@@ -1,7 +1,8 @@
 from model.event import User,Participants,Author,FetchEvent,Location,PostEvent,ArrivalTime,ArrivalTimeList
 from sqlalchemy import create_engine, text
 from typing import List,Dict,Optional
-from datetime import datetime,timezone,timedelta
+from datetime import datetime,timedelta
+from pytz import timezone
 
 class Event():
     def __init__(self, supabase_url: str) -> None:
@@ -229,7 +230,14 @@ class Event():
                 text("SELECT user_id,arrival_time FROM attendances WHERE event_id = :event_id"),
                 {"event_id": event_id}
             ).mappings().fetchall()
-        arrival_time_list = [ArrivalTime(user_id=row['user_id'], arrival_time=row['arrival_time']) for row in result]
+
+        arrival_time_list = [
+            ArrivalTime(
+                user_id=row['user_id'],
+                arrival_time=row['arrival_time']
+            ) for row in result
+        ]
+
         return ArrivalTimeList(arrival_time_list=arrival_time_list)
             
         

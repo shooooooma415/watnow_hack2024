@@ -4,6 +4,7 @@ from repository.profile import Profile
 from typing import List
 from model.event import FetchEvent, Events,Option,ArrivalTime,ArrivalTimeList,ArrivalTimeRanking
 from sqlalchemy import create_engine
+from datetime import timezone,timedelta
 
 class EventService():
     def __init__(self, supabase_url: str) -> None:
@@ -76,8 +77,12 @@ class EventService():
         return ArrivalTimeList(arrival_time_list=sorted_arrival_time_list)
     
     def fetch_arrival_time_ranking(self, event_id: int) -> List[ArrivalTimeRanking]:
+        start_time = self.event.get_start_time(event_id)
+        
+        # arrival_time_listを取得し、時間が早い順にソート
         sorted_arrival_time_list = self.sort_arrival_time_list(event_id).arrival_time_list
         
+        # 到着時間リストが空の場合は空リストを返す
         if not sorted_arrival_time_list:
             return []
 
@@ -87,16 +92,18 @@ class EventService():
             user_id = arrival_time_obj.user_id
             name = self.profile.get_name(user_id)
             alias = self.profile.get_aliase(user_id)
+            arrival_time = arrival_time_obj.arrival_time
 
-            # ランキングのデータを生成
+            # タイムデルタの計算
+            time_difference = arrival_time - start_time
+
             ranking = ArrivalTimeRanking(
                 id=user_id,
                 position=idx + 1,
                 name=name,
                 alias=alias,
-                arrival_time=arrival_time_obj.arrival_time
+                arrival_time=time_difference  
             )
-            
             ranking_list.append(ranking)
-        
+
         return ranking_list

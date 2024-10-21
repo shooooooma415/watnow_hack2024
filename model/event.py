@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime,timedelta
 from typing import List, Optional
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -69,7 +69,7 @@ class EventID(BaseModel):
 
 class ArrivalTime(BaseModel):
     user_id: int
-    arrival_time: datetime
+    arrival_time: Optional[datetime]
 
 class ArrivalTimeList(BaseModel):
     arrival_time_list: Optional[List[ArrivalTime]]
@@ -79,4 +79,4 @@ class ArrivalTimeRanking(BaseModel):
     position:int
     name: str
     alias: Optional[str] = None
-    arrival_time: datetime
+    arrival_time: timedelta

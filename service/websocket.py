@@ -41,7 +41,7 @@ class WebSocketService:
     async def send_ranking(self, websocket):
         distance_dict = self.distance.get_all_distance()
         sorted_distances = sorted(
-            [{"user_id": user_id, "distance": distance} for user_id, distance in distance_dict.items()],
+            [{"user_id": user_id, "distance": distance/1000} for user_id, distance in distance_dict.items()],
             key=lambda x: x['distance'], reverse=True
         )
 
@@ -61,6 +61,7 @@ class WebSocketService:
             "action": "ranking_update",
             "ranking": ranking
         }
+        await websocket.send_text(json.dumps(ranking_message, ensure_ascii=False))
 
         
     def calculate_deadline(self,event_id:str) -> Optional[datetime]:

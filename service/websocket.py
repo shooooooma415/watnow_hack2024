@@ -44,8 +44,6 @@ class WebSocketService:
             [{"user_id": user_id, "distance": distance/1000} for user_id, distance in distance_dict.items()],
             key=lambda x: x['distance'], reverse=True
         )
-
-        # ランキング情報を作成
         ranking = [
             {
                 "position": idx + 1,

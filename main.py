@@ -133,7 +133,7 @@ async def websocket_endpoint(websocket: WebSocket):
     connected_clients: Dict[int, WebSocket] = {}
     user_locations: Dict[int, Location] = {}
     
-    today_event_id_list.append(37)
+    today_event_id_list.append(43)
     event_id = today_event_id_list[0]
     event_deadline_time = websocket_service.calculate_deadline(event_id)
     
@@ -197,7 +197,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 
                 await websocket_service.send_ranking(websocket)
                 event.add_arrival_time(finish_message, event_id)
-
+                print("success")
                 
 
     except Exception as e:

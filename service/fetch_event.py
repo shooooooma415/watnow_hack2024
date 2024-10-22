@@ -90,7 +90,7 @@ class EventService():
             name = self.profile.get_name(user_id)
             alias = self.profile.get_aliase(user_id)
             arrival_time = arrival_time_obj.arrival_time
-            time_difference = arrival_time - start_time
+            time_difference = int((arrival_time - start_time).total_seconds() / 60)
 
             ranking = ArrivalTimeRanking(
                 id=user_id,

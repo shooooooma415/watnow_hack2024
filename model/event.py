@@ -79,4 +79,4 @@ class ArrivalTimeRanking(BaseModel):
     position:int
     name: str
     alias: Optional[str] = None
-    arrival_time: timedelta
+    arrival_time: int

@@ -2,6 +2,7 @@ from model.event import User,Participants,Author,FetchEvent,Location,PostEvent,A
 from sqlalchemy import create_engine, text
 from typing import List,Dict,Optional
 from datetime import datetime,timedelta,timezone
+from model.websocket import FinishMessage
 
 class Event():
     def __init__(self, supabase_url: str) -> None:
@@ -210,7 +211,7 @@ class Event():
                 conn.execute(
                     text("DELETE FROM events WHERE id = :event_id"),{"event_id": event_id})
     
-    def insert_arrival_time(self,user_id:int,event_id:int,arrival_time:datetime) -> None:
+    def add_arrival_time(self,message:FinishMessage,event_id:int) -> None:
         with self.engine.connect() as conn:
             with conn.begin():
                 conn.execute(
@@ -220,7 +221,7 @@ class Event():
                         VALUES (:event_id,:user_id,:arrival_time)
                         """
                     ),
-                    {"event_id": event_id, "user_id": user_id, "arrival_time":arrival_time}
+                    {"event_id": event_id, "user_id": message.user_id, "arrival_time":message.arrival_time}
                     )
     
     def get_arrival_time_list(self,event_id) -> ArrivalTimeList:
@@ -239,4 +240,3 @@ class Event():
 
         return ArrivalTimeList(arrival_time_list=arrival_time_list)
             
-        

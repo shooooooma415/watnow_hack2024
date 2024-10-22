@@ -6,6 +6,7 @@ from model.event import PostEvent,Events,EventResponse,Location,EventID,ArrivalT
 from model.profile import UserProfile,Name
 from model.auth import SignUp,SuccessResponse
 from model.attendances import Attendances,AttendancesResponse,RequestVote
+from model.websocket import FinishMessage
 from repository.event import Event
 from repository.distance import Distance
 from repository.add_votes import AddVotes
@@ -182,13 +183,21 @@ async def websocket_endpoint(websocket: WebSocket):
 
             elif message["action"] == "get_ranking":
                 await websocket_service.send_ranking(websocket)
+                
 
             elif message["action"] == "arrival_notification":
-                user_id = message['user_id']
-                distances.delete_distance(user_id)
+                
+                finish_message = FinishMessage(
+                    action=message["action"],
+                    user_id=message['user_id'],
+                    arrival_time=message['arrival_time']
+                )
+                
+                distances.delete_distance(finish_message.user_id)
+                
                 await websocket_service.send_ranking(websocket)
-                arrival_time = datetime.now()
-                event.insert_arrival_time(user_id,event_id,arrival_time)
+                event.add_arrival_time(finish_message, event_id)
+
                 
 
     except Exception as e:

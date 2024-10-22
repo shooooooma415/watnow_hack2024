@@ -79,10 +79,7 @@ class EventService():
     def fetch_arrival_time_ranking(self, event_id: int) -> List[ArrivalTimeRanking]:
         start_time = self.event.get_start_time(event_id)
         
-        # arrival_time_listを取得し、時間が早い順にソート
         sorted_arrival_time_list = self.sort_arrival_time_list(event_id).arrival_time_list
-        
-        # 到着時間リストが空の場合は空リストを返す
         if not sorted_arrival_time_list:
             return []
 
@@ -93,8 +90,6 @@ class EventService():
             name = self.profile.get_name(user_id)
             alias = self.profile.get_aliase(user_id)
             arrival_time = arrival_time_obj.arrival_time
-
-            # タイムデルタの計算
             time_difference = arrival_time - start_time
 
             ranking = ArrivalTimeRanking(

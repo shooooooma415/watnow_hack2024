@@ -15,7 +15,7 @@ class Profile():
                     ON e.id = a.event_id
                     WHERE a.user_id = :user_id
                     """), {"user_id": user_id}
-            ).fetchall()
+            ).mappings().fetchall()
 
         delay_times = [row['delay_time'] for row in result if row['delay_time'] is not None]
         return delay_times if delay_times else None

@@ -92,3 +92,4 @@ class Profile():
                 "UPDATE users SET name = :name WHERE id = :user_id"),
                 {"name": name, "user_id": user_id}
                 )
+                

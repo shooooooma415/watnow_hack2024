@@ -52,3 +52,6 @@ class ProfileService():
         late_percentage=late_info.late_percentage,
         on_time_count=late_info.on_time_count
       )
+    
+  def calculate_late_point(self,user_id):
+    pass

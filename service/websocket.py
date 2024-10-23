@@ -41,7 +41,7 @@ class WebSocketService:
     async def send_ranking(self, websocket):
         distance_dict = self.distance.get_all_distance()
         sorted_distances = sorted(
-            [{"user_id": user_id, "distance": distance/1000} for user_id, distance in distance_dict.items()],
+            [{"user_id": user_id, "distance": distance} for user_id, distance in distance_dict.items()],
             key=lambda x: x['distance'], reverse=True
         )
         ranking = [

@@ -12,7 +12,9 @@ def send_event_id(event_id: int):
     response = requests.post(f"{SERVER_URL}/events/id", json={"event_id": event_id})
     return response
 
-event_id_list = notification.send_messages()
+# event_id_list = notification.send_messages()
+# for id in event_id_list:
+#     send_event_id(id)
 
-for id in event_id_list:
-    send_event_id(id)
+response = notification.send_notification(event_id=43)
+print(response)

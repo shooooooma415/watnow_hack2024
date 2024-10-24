@@ -5,8 +5,8 @@ import firebase_admin
 from firebase_admin import messaging,credentials
 from main import today_event_id_list
 
-cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
-# cred = credentials.Certificate("serviceAccountKey.json")
+# cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
+cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 
 
@@ -21,6 +21,8 @@ class Notification():
         option_id_list = self.get_attendance.get_attend_option_id(event_id)
         token_list = self.profile.get_token(option_id_list)
         
+        print("fcm_list",token_list)
+        
         message = messaging.MulticastMessage(
                 notification=messaging.Notification(
                     title=event_title,
@@ -28,8 +30,17 @@ class Notification():
                 ),
                 tokens=token_list
             )
-        response = messaging.send_multicast(message)
-        return response
+        response = messaging.send_each_for_multicast(message)
+        print(f"Success count: {response.success_count}")
+        print(f"Failure count: {response.failure_count}")
+
+        # 各メッセージの結果を表示
+        for idx, resp in enumerate(response.responses):
+            if resp.success:
+                print(f"Message {idx + 1} sent successfully")
+            else:
+                print(f"Message {idx + 1} failed with error: {resp.exception}")
+        print(response)
     
     def send_messages(self):
         event_list = self.event.get_notification_event_id()

@@ -36,6 +36,20 @@ class PostEvent(BaseModel):
     latitude: float
     longitude: float
 
+class GetEvent(BaseModel):
+    id: Optional[int] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    is_all_day: Optional[bool] = None
+    start_date_time: Optional[datetime] = None
+    end_date_time: Optional[datetime] = None
+    closing_date_time: Optional[datetime] = None
+    location_name: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    cost: Optional[float] = None
+    message: Optional[str] = None
+
 class FetchEvent(BaseModel):
     id: Optional[int] = None
     title: Optional[str] = None

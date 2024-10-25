@@ -1,4 +1,4 @@
-from model.event import User,Participants,Author,FetchEvent,Location,PostEvent,ArrivalTime,ArrivalTimeList
+from model.event import User,Participants,Author,FetchEvent,Location,PostEvent,ArrivalTime,ArrivalTimeList,GetEvent
 from sqlalchemy import create_engine, text
 from typing import List,Dict,Optional
 from datetime import datetime,timedelta,timezone
@@ -16,19 +16,18 @@ class Event():
                 JOIN users u 
                 ON e.author_id = u.id 
                 WHERE e.id = :event_id
-            """), {"event_id": event_id}).fetchall()
+            """), {"event_id": event_id}).mappings().first()
             
             if result:
-                for row in result:
-                    user_data = Author(
-                        user_id=str(row[0]), 
-                        user_name=str(row[1])
+                user_data = Author(
+                    author_id=result.get("id"),
+                    author_name=result.get("name")
                     )
                 return user_data
             else:
                 return None
 
-    def get_event(self, event_id: int) -> Optional[FetchEvent]:
+    def get_event(self, event_id: int) -> Optional[GetEvent]:
         with self.engine.connect() as conn:
             result = conn.execute(text("""
                 SELECT
@@ -51,19 +50,14 @@ class Event():
             if result is None:
                 return None
             
-            is_all_day= result.get('is_all_day')
-            start_date_time = result.get('start_date_time')
-            end_date_time = result.get('end_date_time')
-            closing_date_time = result.get('closing_date_time')
-            
-            event_data = FetchEvent(
+            event_data = GetEvent(
                 id = event_id,
                 title=result.get('title'),
                 description=result.get('description'),
-                is_all_day=is_all_day, 
-                start_date_time=start_date_time,
-                end_date_time=end_date_time,  
-                closing_date_time=closing_date_time,
+                is_all_day=result.get('is_all_day'), 
+                start_date_time=result.get('start_date_time'),
+                end_date_time=result.get('end_date_time'),  
+                closing_date_time=result.get('closing_date_time'),
                 location_name=result.get('location_name'), 
                 cost=result.get('cost'),
                 message=result.get('message'), 

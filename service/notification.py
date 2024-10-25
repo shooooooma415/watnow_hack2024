@@ -1,3 +1,4 @@
+from model.notification import Notification,Data
 from repository.event import Event
 from repository.profile import Profile
 from repository.get_attendance import GetAttendance
@@ -10,25 +11,38 @@ cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 
 
-class Notification():
+class SendNotification():
     def __init__(self,supabase_url: str) -> None:
         self.event = Event(supabase_url)
         self.profile = Profile(supabase_url)
         self.get_attendance = GetAttendance(supabase_url)
         
-    def send_notification(self,event_id: int):
-        event_title = self.event.get_event_title(event_id)
+    def send_notification(self,event_id: int) -> None:
+        event = self.event.get_event(event_id)
         option_id_list = self.get_attendance.get_attend_option_id(event_id)
         token_list = self.profile.get_token(option_id_list)
         
-        print("fcm_list",token_list)
+        notification = Notification(
+            title=event.title,
+            body=f"集合場所: {event.location_name}, 集合時間: {event.start_date_time.strftime('%H:%M')}"
+            )
+        
+        data = Data(
+            event_id=str(event.id),
+            title=event.title,
+            location=event.location_name,
+            latitude=str(event.latitude),
+            longitude=str(event.longitude),
+            start_time=str(event.start_date_time)
+            )
         
         message = messaging.MulticastMessage(
+                tokens=token_list,
                 notification=messaging.Notification(
-                    title=event_title,
-                    body=f'明日は{event_title}です！'
+                    title=notification.title,
+                    body=notification.body
                 ),
-                tokens=token_list
+                data=data.model_dump()
             )
         response = messaging.send_each_for_multicast(message)
         print(f"Success count: {response.success_count}")
@@ -40,7 +54,6 @@ class Notification():
                 print(f"Message {idx + 1} sent successfully")
             else:
                 print(f"Message {idx + 1} failed with error: {resp.exception}")
-        print(response)
     
     def send_messages(self):
         event_list = self.event.get_notification_event_id()

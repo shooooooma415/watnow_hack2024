@@ -24,6 +24,7 @@ class Option(BaseModel):
 
 class PostEvent(BaseModel):
     title: str
+    author_id: int
     description: str
     is_all_day: bool
     start_time: datetime

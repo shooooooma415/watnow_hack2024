@@ -149,6 +149,7 @@ class Event():
     
     def add_events(self, input: PostEvent):
         title = input.title
+        author_id = input.author_id
         description = input.description
         is_all_day = input.is_all_day
         start_time = input.start_time

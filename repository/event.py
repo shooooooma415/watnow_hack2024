@@ -76,9 +76,13 @@ class Event():
     
     def get_location(self,event_id:str) -> Optional[Location]:
         with self.engine.connect() as conn:
-            result = conn.execute(text("""SELECT latitude,longitude 
-                                        FROM events 
-                                        WHERE id = :event_id"""), 
+            result = conn.execute(text(
+                                    """
+                                    SELECT latitude,longitude 
+                                    FROM events 
+                                    WHERE id = :event_id
+                                    """
+                                    ), 
                                     {"event_id": event_id}).mappings().first()
             latitude = result.get("latitude")
             longitude = result.get("longitude")
@@ -234,12 +238,21 @@ class Event():
 
         return ArrivalTimeList(arrival_time_list=arrival_time_list)
     
-    def get_all_delay_time(self,user_id:int) ->List:
+    def get_all_delay_time(self,user_id:int) ->List[datetime]:
         with self.engine.connect() as conn:
             query = conn.execute(
-                text(""),
+                text(
+                    """
+                    SELECT a.arrival_time - e.start_date_time
+                    FROM attendances a
+                    JOIN events e
+                    ON a.event_id = e.id
+                    WHERE a.user_id = :user_id
+                    """),
                 {"user_id": user_id,}
             )
             result = query.fetchall()
-            notification_event_id_list = [row[0] for row in result]
+            delay_time_list = [row[0] for row in result]
+            
+        return delay_time_list
             

@@ -233,4 +233,13 @@ class Event():
         ]
 
         return ArrivalTimeList(arrival_time_list=arrival_time_list)
+    
+    def get_all_delay_time(self,user_id:int) ->List:
+        with self.engine.connect() as conn:
+            query = conn.execute(
+                text(""),
+                {"user_id": user_id,}
+            )
+            result = query.fetchall()
+            notification_event_id_list = [row[0] for row in result]
             

@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
-class SignInResponse(BaseModel):
-    user_id : int
+class AuthResponse(BaseModel):
+    id : int
 
 class SuccessResponse(BaseModel):
     is_success : bool

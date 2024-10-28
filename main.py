@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine, text
 from model.event import PostEvent,Events,EventResponse,Location,EventID,ArrivalTimeRanking
 from model.profile import UserProfile,Name
-from model.auth import SignUp,SignIn,SuccessResponse,SignInResponse
+from model.auth import SignUp,SignIn,SuccessResponse,AuthResponse
 from model.attendances import Attendances,AttendancesResponse,RequestVote
 from model.websocket import FinishMessage
 from repository.auth import Auth
@@ -66,11 +66,11 @@ def signup(input:SignUp):
             user_id = int(result.scalar())
     return {"id": user_id}
 
-@app.post("/signin",response_model=SignInResponse)
+@app.post("/signin",response_model=AuthResponse)
 def signin(input:SignIn):
     auth_id = input.auth_id
     user_id = auth.get_user_id(auth_id)
-    return SignInResponse(user_id=user_id)
+    return AuthResponse(id=user_id)
 
 
 @app.get("/events/board",response_model = Events)

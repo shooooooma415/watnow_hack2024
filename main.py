@@ -54,23 +54,14 @@ async def handler(request:Request, exc:RequestValidationError):
     print(exc)
     return JSONResponse(content={}, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-@app.post("/signup")
+@app.post("/signup",response_model=AuthResponse)
 def signup(input:SignUp):
-    user_name = input.user_name
-    auth_id = input.auth_id
-    token = input.token
-    with engine.connect() as conn:
-        with conn.begin():
-            result = conn.execute(text(f"INSERT INTO users(name, auth_id, token) VALUES(:name, :auth_id, :token) RETURNING id"),
-                {'name': user_name, 'auth_id': auth_id, 'token': token})
-            user_id = int(result.scalar())
-    return {"id": user_id}
+    return auth.create_user_id(input)
+
 
 @app.post("/signin",response_model=AuthResponse)
 def signin(input:SignIn):
-    auth_id = input.auth_id
-    user_id = auth.get_user_id(auth_id)
-    return AuthResponse(id=user_id)
+    return auth.get_user_id(input)
 
 
 @app.get("/events/board",response_model = Events)

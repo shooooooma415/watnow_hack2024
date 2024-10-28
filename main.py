@@ -4,9 +4,10 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine, text
 from model.event import PostEvent,Events,EventResponse,Location,EventID,ArrivalTimeRanking
 from model.profile import UserProfile,Name
-from model.auth import SignUp,SuccessResponse
+from model.auth import SignUp,SignIn,SuccessResponse,SignInResponse
 from model.attendances import Attendances,AttendancesResponse,RequestVote
 from model.websocket import FinishMessage
+from repository.auth import Auth
 from repository.event import Event
 from repository.distance import Distance
 from repository.add_votes import AddVotes
@@ -36,6 +37,7 @@ vote = Vote(supabase_url)
 add_votes = AddVotes(supabase_url)
 get_attendance = GetAttendance(supabase_url)
 profile = Profile(supabase_url)
+auth = Auth(supabase_url)
 
 today_event_id_list: List[int] = []
 
@@ -63,7 +65,13 @@ def signup(input:SignUp):
                 {'name': user_name, 'auth_id': auth_id, 'token': token})
             user_id = int(result.scalar())
     return {"id": user_id}
-    
+
+@app.post("/signin",response_model=SignInResponse)
+def signin(input:SignIn):
+    auth_id = input.auth_id
+    user_id = auth.get_user_id(auth_id)
+    return SignInResponse(user_id=user_id)
+
 
 @app.get("/events/board",response_model = Events)
 def get_events_board():

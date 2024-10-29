@@ -164,8 +164,6 @@ async def websocket_endpoint(websocket: WebSocket):
 def read_root():
     return today_event_id_list
 
-
-
 from service.notification import SendNotification
 notification=SendNotification(supabase_url)
 response = notification.send_notification(event_id=44)

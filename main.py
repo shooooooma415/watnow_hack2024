@@ -1,4 +1,4 @@
-from fastapi import FastAPI,WebSocket,Request,status,HTTPException
+from fastapi import FastAPI,WebSocket,Request,status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine, text
@@ -163,3 +163,14 @@ async def websocket_endpoint(websocket: WebSocket):
 @app.get("/check")
 def read_root():
     return today_event_id_list
+
+
+
+from service.notification import SendNotification
+notification=SendNotification(supabase_url)
+response = notification.send_notification(event_id=44)
+
+@app.get("/notification")
+def send_notification():
+    response = notification.send_notification(event_id=44)
+    return response

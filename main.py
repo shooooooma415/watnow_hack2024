@@ -4,10 +4,9 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine, text
 from model.event import PostEvent,Events,EventResponse,Location,EventID,ArrivalTimeRanking
 from model.profile import UserProfile,Name
-from model.auth import SignUp,SignIn,SuccessResponse,AuthResponse
+from model.auth import SuccessResponse
 from model.attendances import Attendances,AttendancesResponse,RequestVote
 from model.websocket import FinishMessage
-from repository.auth import Auth
 from repository.event import Event
 from repository.distance import Distance
 from repository.add_votes import AddVotes
@@ -23,10 +22,14 @@ from typing import List, Dict
 from datetime import datetime,timezone
 import json
 
+# ルーターの呼び出し
+from routers.auth import get_auth_router
+
 load_dotenv()
 
 app = FastAPI()
 supabase_url = os.getenv('SUPABASE_URL')
+
 engine = create_engine(supabase_url)
 event = Event(supabase_url)
 event_service = EventService(supabase_url)
@@ -37,9 +40,16 @@ vote = Vote(supabase_url)
 add_votes = AddVotes(supabase_url)
 get_attendance = GetAttendance(supabase_url)
 profile = Profile(supabase_url)
-auth = Auth(supabase_url)
 
 today_event_id_list: List[int] = []
+
+
+# ルーターの取得
+auth_router = get_auth_router(supabase_url)
+
+# ルーターの追加
+app.include_router(auth_router)
+
 
 @app.get("/")
 def read_root():
@@ -54,14 +64,14 @@ async def handler(request:Request, exc:RequestValidationError):
     print(exc)
     return JSONResponse(content={}, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-@app.post("auth/signup",response_model=AuthResponse)
-def signup(input:SignUp):
-    return auth.create_user_id(input)
+# @app.post("auth/signup",response_model=AuthResponse)
+# def signup(input:SignUp):
+#     return auth.create_user_id(input)
 
 
-@app.post("auth/signin",response_model=AuthResponse)
-def signin(input:SignIn):
-    return auth.get_user_id(input)
+# @app.post("auth/signin",response_model=AuthResponse)
+# def signin(input:SignIn):
+#     return auth.get_user_id(input)
 
 
 @app.get("/events/board",response_model = Events)
@@ -95,6 +105,11 @@ def get_arrival_ranking(event_id:int):
     ranking = event_service.fetch_arrival_time_ranking(event_id)
     return ranking
 
+@app.post("/events/id")
+def add_event_id(event:EventID):
+    today_event_id_list.append(event.event_id)
+    return {"message": "Event ID added successfully", "today_event_id_list": today_event_id_list}
+
 @app.get("/users/{user_id}/profile",response_model=UserProfile)
 def get_name(user_id: int):
     user_profile = profile_service.fetch_profile(user_id)
@@ -119,11 +134,6 @@ def send_arrival_time_info(event_id: int, user_id: int):
             return AttendancesResponse(message="Attendance data retrieved successfully")
         else:
             return AttendancesResponse(message="No attendance found for this event and user.")
-        
-@app.post("/events/id")
-def add_event_id(event:EventID):
-    today_event_id_list.append(event.event_id)
-    return {"message": "Event ID added successfully", "today_event_id_list": today_event_id_list}
         
 @app.websocket("/ws/ranking")
 async def websocket_endpoint(websocket: WebSocket):

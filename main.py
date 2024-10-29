@@ -2,7 +2,7 @@ from fastapi import FastAPI,WebSocket,Request,status,HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine, text
-from model.event import PostEvent,Events,EventResponse,Location,EventID,ArrivalTimeRanking
+from model.event import Location,EventID
 from model.profile import UserProfile,Name
 from model.auth import SuccessResponse
 from model.attendances import Attendances,AttendancesResponse,RequestVote
@@ -24,6 +24,7 @@ import json
 
 # ルーターの呼び出し
 from routers.auth import get_auth_router
+from routers.event import get_event_router
 
 load_dotenv()
 
@@ -46,10 +47,11 @@ today_event_id_list: List[int] = []
 
 # ルーターの取得
 auth_router = get_auth_router(supabase_url)
+event_router = get_event_router(supabase_url)
 
 # ルーターの追加
 app.include_router(auth_router)
-
+app.include_router(event_router)
 
 @app.get("/")
 def read_root():
@@ -63,47 +65,6 @@ def read_root():
 async def handler(request:Request, exc:RequestValidationError):
     print(exc)
     return JSONResponse(content={}, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
-# @app.post("auth/signup",response_model=AuthResponse)
-# def signup(input:SignUp):
-#     return auth.create_user_id(input)
-
-
-# @app.post("auth/signin",response_model=AuthResponse)
-# def signin(input:SignIn):
-#     return auth.get_user_id(input)
-
-
-@app.get("/events/board",response_model = Events)
-def get_events_board():
-    events_board = event_service.fetch_all_events()
-    return events_board
-
-
-@app.post("/events",response_model=EventResponse)
-def insert_event(input: PostEvent):
-    event_id = event.add_events(input)
-    event.add_option(event_id)
-    response = EventResponse(event_id=event_id, message="Event created successfully")
-    return response
-
-@app.delete("/events/{event_id}",response_model=SuccessResponse)
-def delete_event(event_id:int):
-    event.delete_event(event_id)
-    return SuccessResponse(is_success = True)
-
-@app.post("/events/{event_id}/votes",response_model=SuccessResponse)
-def votes(input:RequestVote, event_id:int):
-    vote.delete_vote(event_id,input.user_id)
-    option_id = get_attendance.get_option_id(event_id,input.option)
-    add_votes.insert_vote(option_id,input.user_id)
-    
-    return SuccessResponse(is_success = True)
-
-@app.get("/events/{event_id}/arrival_ranking",response_model=List[ArrivalTimeRanking])
-def get_arrival_ranking(event_id:int):
-    ranking = event_service.fetch_arrival_time_ranking(event_id)
-    return ranking
 
 @app.post("/events/id")
 def add_event_id(event:EventID):

@@ -3,8 +3,6 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine, text
 from model.event import Location,EventID
-from model.profile import UserProfile,Name
-from model.auth import SuccessResponse
 from model.attendances import Attendances,AttendancesResponse,RequestVote
 from model.websocket import FinishMessage
 from repository.event import Event
@@ -25,6 +23,7 @@ import json
 # ルーターの呼び出し
 from routers.auth import get_auth_router
 from routers.event import get_event_router
+from routers.user import get_users_router
 
 load_dotenv()
 
@@ -48,10 +47,12 @@ today_event_id_list: List[int] = []
 # ルーターの取得
 auth_router = get_auth_router(supabase_url)
 event_router = get_event_router(supabase_url)
+user_router = get_users_router(supabase_url)
 
 # ルーターの追加
 app.include_router(auth_router)
 app.include_router(event_router)
+app.include_router(user_router)
 
 @app.get("/")
 def read_root():
@@ -70,20 +71,6 @@ async def handler(request:Request, exc:RequestValidationError):
 def add_event_id(event:EventID):
     today_event_id_list.append(event.event_id)
     return {"message": "Event ID added successfully", "today_event_id_list": today_event_id_list}
-
-@app.get("/users/{user_id}/profile",response_model=UserProfile)
-def get_name(user_id: int):
-    user_profile = profile_service.fetch_profile(user_id)
-    
-    if user_profile is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    return user_profile
-
-@app.put("/users/{user_id}/profile/name", response_model=SuccessResponse)
-def renew_profile(input:Name,user_id:int):
-    profile.update_name(user_id,input.name)
-    return SuccessResponse(is_success = True)
 
 @app.post("/attendances/{event_id}/{user_id}",response_model=AttendancesResponse)
 def send_arrival_time_info(event_id: int, user_id: int):

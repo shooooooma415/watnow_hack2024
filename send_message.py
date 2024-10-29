@@ -16,5 +16,5 @@ def send_event_id(event_id: int):
 # for id in event_id_list:
 #     send_event_id(id)
 
-response = notification.send_notification(event_id=43)
+response = notification.send_notification(event_id=44)
 print(response)

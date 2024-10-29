@@ -3,7 +3,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine, text
 from model.event import Location,EventID
-from model.attendances import Attendances,AttendancesResponse,RequestVote
+from model.attendances import Attendances,AttendancesResponse
 from model.websocket import FinishMessage
 from repository.event import Event
 from repository.distance import Distance

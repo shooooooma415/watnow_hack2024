@@ -49,7 +49,10 @@ class GetAttendance():
             
             for row in result:
                 response = row[0]
-        return response
+        if result:
+            return result[0][0]
+        else:
+            return None
     
     def get_option_id(self, event_id: int, option: str) -> Optional[int]:
         with self.engine.connect() as conn:

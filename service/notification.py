@@ -33,17 +33,18 @@ class SendNotification():
             location=event.location_name,
             latitude=str(event.latitude),
             longitude=str(event.longitude),
-            start_time=str(event.start_date_time)
+            start_time=str(event.start_date_time.strftime('%Y-%m-%d %H:%M:%S'))
             )
         
         message = messaging.MulticastMessage(
+                data=data.model_dump(),
                 tokens=token_list,
                 notification=messaging.Notification(
                     title=notification.title,
                     body=notification.body
-                ),
-                data=data.model_dump()
+                )
             )
+        
         response = messaging.send_each_for_multicast(message)
         print(f"Success count: {response.success_count}")
         print(f"Failure count: {response.failure_count}")

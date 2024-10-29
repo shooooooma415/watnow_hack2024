@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter,HTTPException
 from model.profile import UserProfile,Name
 from repository.profile import Profile
 from service.fetch_profile import ProfileService
@@ -15,8 +15,8 @@ def get_users_router(supabase_url: str):
     def get_name(user_id: int):
         user_profile = profile_service.fetch_profile(user_id)
         
-        # if user_profile is None:
-        #     raise HTTPException(status_code=404, detail="User not found")
+        if user_profile is None:
+            raise HTTPException(status_code=404, detail="User not found")
         
         return user_profile
 

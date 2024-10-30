@@ -111,3 +111,6 @@ class Profile():
             delay_time_list = [row[0] for row in result]
             
         return delay_time_list
+    
+    def update_aliase_id(self,user_id):
+        pass

@@ -61,6 +61,9 @@ class ProfileService():
         
         return late_point
     
+    def judge_aliase(self,user_id):
+        pass
+    
     def fetch_profile(self,user_id) -> Optional[UserProfile]:
         alias = self.profile.get_aliase(user_id)
         name = self.profile.get_name(user_id)

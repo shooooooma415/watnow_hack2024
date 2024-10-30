@@ -238,7 +238,7 @@ class Event():
 
         return ArrivalTimeList(arrival_time_list=arrival_time_list)
     
-    def get_all_delay_time(self,user_id:int) ->List[datetime]:
+    def get_all_delay_time(self,user_id:int) ->List[float]:
         with self.engine.connect() as conn:
             query = conn.execute(
                 text(
@@ -252,7 +252,7 @@ class Event():
                 {"user_id": user_id,}
             )
             result = query.fetchall()
-            delay_time_list = [row[0] for row in result]
+            delay_time_list = [float(int(row[0].total_seconds() / 60)) for row in result]
             
         return delay_time_list
             

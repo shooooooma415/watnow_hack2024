@@ -39,20 +39,6 @@ class ProfileService():
                         on_time_count = on_time_p, 
                         late_percentage = late_rate)
 
-    def fetch_profile(self,user_id) -> Optional[UserProfile]:
-        alias = self.profile.get_aliase(user_id)
-        name = self.profile.get_name(user_id)
-        late_info = self.calculate_late_time(user_id)
-
-        return UserProfile(
-            name=name,
-            alias=alias,
-            late_count=late_info.late_count,
-            total_late_time=late_info.total_late_time,
-            late_percentage=late_info.late_percentage,
-            on_time_count=late_info.on_time_count
-        )
-
     def calculate_late_point(self,user_id:int) -> Optional[int]:
         plus_time=[]
         minus_time=[]
@@ -74,3 +60,21 @@ class ProfileService():
         late_point = int(plus_total * (1 + 0.5 * (p_count - 1)) - minus_total * (1 + 0.2 * (m_count - 1)))
         
         return late_point
+    
+    def fetch_profile(self,user_id) -> Optional[UserProfile]:
+        alias = self.profile.get_aliase(user_id)
+        name = self.profile.get_name(user_id)
+        late_info = self.calculate_late_time(user_id)
+        tikoku_point = self.calculate_late_point(user_id)
+
+        return UserProfile(
+            name=name,
+            alias=alias,
+            late_count=late_info.late_count,
+            total_late_time=late_info.total_late_time,
+            late_percentage=late_info.late_percentage,
+            on_time_count=late_info.on_time_count,
+            tikoku_point=tikoku_point
+        )
+
+    

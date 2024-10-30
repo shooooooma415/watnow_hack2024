@@ -11,6 +11,7 @@
         "signin",
         "sqlalchemy",
         "supabase",
+        "tikoku",
         "tikokulympic",
         "uvicorn",
         "watnow"

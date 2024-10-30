@@ -9,6 +9,7 @@ class UserProfile(BaseModel):
     total_late_time: int = None
     late_percentage: float = None
     on_time_count: int = None
+    tikoku_point: int
 
 class Delay(BaseModel):
     total_late_time: int = None

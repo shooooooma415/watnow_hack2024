@@ -10,7 +10,6 @@ cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
 # cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 
-
 class SendNotification():
     def __init__(self,supabase_url: str) -> None:
         self.event = Event(supabase_url)

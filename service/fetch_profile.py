@@ -61,8 +61,24 @@ class ProfileService():
         
         return late_point
     
-    def judge_aliase(self,user_id):
-        pass
+    def judge_aliase(self,user_id) -> Optional[int]:
+        tikoku_point = self.calculate_late_point(user_id)
+        if tikoku_point <= -101:
+            return 9
+        elif -100 <= tikoku_point <= -51:
+            return 8
+        elif -50 <=tikoku_point <= -1:
+            return 7
+        elif tikoku_point == 0:
+            return 6
+        elif 1 <= tikoku_point <= 20:
+            return 5
+        elif 21 <= tikoku_point <= 100:
+            return 4
+        elif 101 <= tikoku_point <= 400:
+            return 3
+        elif tikoku_point >= 401:
+            return 2
     
     def fetch_profile(self,user_id) -> Optional[UserProfile]:
         alias = self.profile.get_aliase(user_id)
@@ -79,5 +95,3 @@ class ProfileService():
             on_time_count=late_info.on_time_count,
             tikoku_point=tikoku_point
         )
-
-    

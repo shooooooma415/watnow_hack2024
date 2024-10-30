@@ -113,4 +113,9 @@ class Profile():
         return delay_time_list
     
     def update_aliase_id(self,user_id):
-        pass
+        with self.engine.connect() as conn:
+            with conn.begin():
+                conn.execute(text(
+                    "UPDATE user_alias SET alias_id = :alias_id WHERE user_id = :user_id"),
+                    {"user_id": user_id}
+                )

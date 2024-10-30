@@ -1,7 +1,7 @@
 from repository.event import Event, Participants
 from repository.get_attendance import GetAttendance
 from repository.profile import Profile
-from typing import List
+from typing import List,Optional
 from model.event import FetchEvent, Events,Option,ArrivalTime,ArrivalTimeList,ArrivalTimeRanking
 from sqlalchemy import create_engine
 from datetime import timezone,timedelta

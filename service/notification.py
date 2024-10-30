@@ -49,7 +49,6 @@ class SendNotification():
         print(f"Success count: {response.success_count}")
         print(f"Failure count: {response.failure_count}")
 
-        # 各メッセージの結果を表示
         for idx, resp in enumerate(response.responses):
             if resp.success:
                 print(f"Message {idx + 1} sent successfully")

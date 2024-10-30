@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine, text
 from typing import Optional,List
+from datetime import datetime
 
 class Profile():
     def __init__(self,supabase_url: str) -> None:
@@ -93,3 +94,20 @@ class Profile():
                 {"name": name, "user_id": user_id}
                 )
                 
+    def get_all_delay_time(self,user_id:int) ->List[datetime]:
+        with self.engine.connect() as conn:
+            query = conn.execute(
+                text(
+                    """
+                    SELECT a.arrival_time - e.start_date_time
+                    FROM attendances a
+                    JOIN events e
+                    ON a.event_id = e.id
+                    WHERE a.user_id = :user_id
+                    """),
+                {"user_id": user_id,}
+            )
+            result = query.fetchall()
+            delay_time_list = [row[0] for row in result]
+            
+        return delay_time_list

@@ -166,7 +166,6 @@ def read_root():
 
 from service.notification import SendNotification
 notification=SendNotification(supabase_url)
-response = notification.send_notification(event_id=44)
 
 @app.get("/notification")
 def send_notification():

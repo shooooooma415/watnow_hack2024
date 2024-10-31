@@ -6,7 +6,7 @@ class Notification(BaseModel):
     title:str
     body:str
     
-class Data(BaseModel):
+class EventData(BaseModel):
     event_id:str
     title:str
     location:str

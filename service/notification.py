@@ -1,4 +1,4 @@
-from model.notification import Notification,Data
+from model.notification import Notification,EventData
 from repository.event import Event
 from repository.profile import Profile
 from repository.get_attendance import GetAttendance
@@ -26,7 +26,8 @@ class SendNotification():
             body=f"集合場所: {event.location_name}, 集合時間: {event.start_date_time.strftime('%H:%M')}"
             )
         
-        data = Data(
+        data = EventData(
+            content = "remind",
             event_id=str(event.id),
             title=event.title,
             location=event.location_name,

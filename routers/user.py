@@ -11,7 +11,7 @@ def get_users_router(supabase_url: str):
     profile_service = ProfileService(supabase_url)
     profile = Profile(supabase_url)
 
-    @router.get("/users/{user_id}/profile",response_model=UserProfile)
+    @router.get("/{user_id}/profile",response_model=UserProfile)
     def get_name(user_id: int):
         user_profile = profile_service.fetch_profile(user_id)
         
@@ -20,9 +20,13 @@ def get_users_router(supabase_url: str):
         
         return user_profile
 
-    @router.put("/users/{user_id}/profile/name", response_model=SuccessResponse)
+    @router.put("/{user_id}/profile/name", response_model=SuccessResponse)
     def renew_profile(input:Name,user_id:int):
         profile.update_name(user_id,input.name)
         return SuccessResponse(is_success = True)
+    
+    @router.put("/{user_id}/profile/aliase")
+    def update_aliase():
+        pass
     
     return router

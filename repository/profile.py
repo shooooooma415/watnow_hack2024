@@ -74,7 +74,16 @@ class Profile():
 
         return result["name"]
     
-    def get_token(self, option_id:int) -> List[str]:
+    def get_token(self, user_id:int) -> Optional[str]:
+        with self.engine.connect() as conn:
+            result = conn.execute(
+                text("""SELECT token FROM users WHERE id = :user_id"""),
+                {"user_id": user_id}
+            ).fetchone()
+            
+        return result[0] if result else None
+    
+    def get_token_list(self, option_id:int) -> List[str]:
         token_list = []
         with self.engine.connect() as conn:
             result = conn.execute(

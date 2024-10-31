@@ -2,6 +2,7 @@ from fastapi import APIRouter,HTTPException
 from model.profile import UserProfile,Name
 from repository.profile import Profile
 from service.fetch_profile import ProfileService
+from service.notification import SendNotification
 from model.auth import SuccessResponse
 
 
@@ -10,6 +11,7 @@ def get_users_router(supabase_url: str):
     router = APIRouter(prefix="/users", tags=["Users"])
     profile_service = ProfileService(supabase_url)
     profile = Profile(supabase_url)
+    notification = SendNotification(supabase_url)
 
     @router.get("/{user_id}/profile",response_model=UserProfile)
     def get_name(user_id: int):
@@ -29,6 +31,6 @@ def get_users_router(supabase_url: str):
     def update_aliase(user_id:int):
         aliase_id = profile_service.judge_aliase(user_id)
         profile.update_aliase_id(user_id,aliase_id)
-        return {"aliase_id":aliase_id}
+        notification.send_renew_aliase(user_id)
     
     return router

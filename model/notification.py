@@ -6,10 +6,15 @@ class Notification(BaseModel):
     title:str
     body:str
     
-class EventData(BaseModel):
+class RemindData(BaseModel):
+    content:str
     event_id:str
     title:str
     location:str
     latitude:str
     longitude:str
     start_time:str
+    
+class AliaseData(BaseModel):
+    content: str
+    aliase: str

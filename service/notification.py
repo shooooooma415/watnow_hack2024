@@ -1,10 +1,10 @@
-from model.notification import Notification,EventData
+from model.notification import Notification,RemindData,AliaseData
 from repository.event import Event
 from repository.profile import Profile
 from repository.get_attendance import GetAttendance
 import firebase_admin
 from firebase_admin import messaging,credentials
-from main import today_event_id_list
+# from main import today_event_id_list
 
 cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
 # cred = credentials.Certificate("serviceAccountKey.json")
@@ -19,14 +19,14 @@ class SendNotification():
     def send_remind(self,event_id: int) -> None:
         event = self.event.get_event(event_id)
         option_id_list = self.get_attendance.get_attend_option_id(event_id)
-        token_list = self.profile.get_token(option_id_list)
+        token_list = self.profile.get_token_list(option_id_list)
         
         notification = Notification(
             title=event.title,
             body=f"集合場所: {event.location_name}, 集合時間: {event.start_date_time.strftime('%H:%M')}"
             )
         
-        data = EventData(
+        data = RemindData(
             content = "remind",
             event_id=str(event.id),
             title=event.title,
@@ -55,9 +55,35 @@ class SendNotification():
             else:
                 print(f"Message {idx + 1} failed with error: {resp.exception}")
     
-    def send_messages(self):
-        event_list = self.event.get_notification_event_id()
-        for event_id in event_list:
-            today_event_id_list.append(event_id)
-            self.send_remind(event_id)
-        return today_event_id_list
+    # def send_messages(self):
+    #     event_list = self.event.get_notification_event_id()
+    #     for event_id in event_list:
+    #         today_event_id_list.append(event_id)
+    #         self.send_remind(event_id)
+    #     return today_event_id_list
+    
+    def send_renew_aliase(self,user_id:int):
+        token = self.profile.get_token(user_id)
+        aliase = self.profile.get_aliase(user_id)
+        
+        notification = Notification(
+            title = f"「{aliase}」が付与されました",
+            body = f"現在の称号は「{aliase}」です"
+        )
+        
+        data = AliaseData(
+            content = "aliase",
+            aliase = aliase
+        )
+        
+        message = messaging.Message(
+                data=data.model_dump(),
+                token=token,
+                notification=messaging.Notification(
+                    title=notification.title,
+                    body=notification.body
+                )
+            )
+        response = messaging.send(message)
+
+        return response

@@ -26,7 +26,9 @@ def get_users_router(supabase_url: str):
         return SuccessResponse(is_success = True)
     
     @router.put("/{user_id}/profile/aliase")
-    def update_aliase():
-        pass
+    def update_aliase(user_id:int):
+        aliase_id = profile_service.judge_aliase(user_id)
+        profile.update_aliase_id(user_id,aliase_id)
+        return {"aliase_id":aliase_id}
     
     return router

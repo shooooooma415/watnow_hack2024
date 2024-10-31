@@ -112,11 +112,11 @@ class Profile():
             
         return delay_time_list
     
-    def update_aliase_id(self,user_id):
-        aliase_id = None #ここで判定したidを呼び出す
+    def update_aliase_id(self, user_id:int, aliase_id:int):
         with self.engine.connect() as conn:
             with conn.begin():
                 conn.execute(text(
                     "UPDATE user_alias SET aliase_id = :aliase_id WHERE user_id = :user_id"),
                     {"aliase_id":aliase_id,"user_id": user_id}
                 )
+        # return "success" #ここは要件にちょって変える

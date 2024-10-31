@@ -1,8 +1,9 @@
 from model.profile import Delay,UserProfile
+from model.aliase import AliaseID
 from repository.profile import Profile
 from datetime import timedelta
-import datetime
 from typing import Optional
+
 
 class ProfileService():
     def __init__(self, supabase_url: str) -> None:
@@ -64,21 +65,21 @@ class ProfileService():
     def judge_aliase(self,user_id) -> Optional[int]:
         tikoku_point = self.calculate_late_point(user_id)
         if tikoku_point <= -101:
-            return 9
+            return AliaseID.無遅刻ゴールド.value
         elif -100 <= tikoku_point <= -51:
-            return 8
+            return AliaseID.watnowの光.value
         elif -50 <=tikoku_point <= -1:
-            return 7
+            return AliaseID.健常者.value
         elif tikoku_point == 0:
-            return 6
+            return AliaseID.遅刻1回生.value
         elif 1 <= tikoku_point <= 20:
-            return 5
+            return AliaseID.ビギナー遅刻者.value
         elif 21 <= tikoku_point <= 100:
-            return 4
+            return AliaseID.遅刻インターン生.value
         elif 101 <= tikoku_point <= 400:
-            return 3
+            return AliaseID.CTO.value
         elif tikoku_point >= 401:
-            return 2
+            return AliaseID.遅刻王.value
     
     def fetch_profile(self,user_id) -> Optional[UserProfile]:
         alias = self.profile.get_aliase(user_id)

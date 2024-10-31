@@ -1,4 +1,5 @@
-from model.event import User,Participants,Author,FetchEvent,Location,PostEvent,ArrivalTime,ArrivalTimeList,GetEvent
+from model.event import Author,Location,PostEvent,ArrivalTime,ArrivalTimeList,GetEvent
+from model.attendances import Attendances,AttendancesResponse
 from sqlalchemy import create_engine, text
 from typing import List,Dict,Optional
 from datetime import datetime,timedelta,timezone
@@ -255,4 +256,13 @@ class Event():
             delay_time_list = [float(int(row[0].total_seconds() / 60)) for row in result]
             
         return delay_time_list
-            
+    
+    def add_attendance(self,user_id:int,event_id:int):
+        with self.engine.connect() as conn:
+            query = text("SELECT * FROM attendances WHERE event_id = :event_id AND user_id = :user_id")
+            result = conn.execute(query, {"event_id": event_id, "user_id": user_id}).mappings()
+            attendances = [Attendances(**row) for row in result]
+            if attendances:
+                return AttendancesResponse(message="Attendance data retrieved successfully")
+            else:
+                return AttendancesResponse(message="No attendance found for this event and user.")

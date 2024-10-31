@@ -1,9 +1,11 @@
 from fastapi import FastAPI,WebSocket,Request,status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+import schedule
+import time
+import os
 from sqlalchemy import create_engine, text
 from model.event import Location,EventID
-from model.attendances import Attendances,AttendancesResponse
 from model.websocket import FinishMessage
 from repository.event import Event
 from repository.distance import Distance
@@ -14,7 +16,6 @@ from service.fetch_event import EventService
 from service.websocket import WebSocketService
 from service.fetch_profile import ProfileService
 from service.vote import Vote
-import os
 from dotenv import load_dotenv
 from typing import List, Dict
 from datetime import datetime,timezone
@@ -24,6 +25,7 @@ import json
 from routers.auth import get_auth_router
 from routers.event import get_event_router
 from routers.user import get_users_router
+from routers.attendance import get_attendances_router
 
 load_dotenv()
 
@@ -48,11 +50,13 @@ today_event_id_list: List[int] = []
 auth_router = get_auth_router(supabase_url)
 event_router = get_event_router(supabase_url)
 user_router = get_users_router(supabase_url)
+attendances_router = get_attendances_router(supabase_url)
 
 # ルーターの追加
 app.include_router(auth_router)
 app.include_router(event_router)
 app.include_router(user_router)
+app.include_router(attendances_router)
 
 @app.get("/")
 def read_root():
@@ -72,17 +76,6 @@ def add_event_id(event:EventID):
     today_event_id_list.append(event.event_id)
     return {"message": "Event ID added successfully", "today_event_id_list": today_event_id_list}
 
-@app.post("/attendances/{event_id}/{user_id}",response_model=AttendancesResponse)
-def send_arrival_time_info(event_id: int, user_id: int):
-    with engine.connect() as conn:
-        query = text("SELECT * FROM attendances WHERE event_id = :event_id AND user_id = :user_id")
-        result = conn.execute(query, {"event_id": event_id, "user_id": user_id}).mappings()
-        attendances = [Attendances(**row) for row in result]
-        if attendances:
-            return AttendancesResponse(message="Attendance data retrieved successfully")
-        else:
-            return AttendancesResponse(message="No attendance found for this event and user.")
-        
 @app.websocket("/ws/ranking")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()

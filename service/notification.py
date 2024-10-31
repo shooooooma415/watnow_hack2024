@@ -16,7 +16,7 @@ class SendNotification():
         self.profile = Profile(supabase_url)
         self.get_attendance = GetAttendance(supabase_url)
         
-    def send_notification(self,event_id: int) -> None:
+    def send_remind(self,event_id: int) -> None:
         event = self.event.get_event(event_id)
         option_id_list = self.get_attendance.get_attend_option_id(event_id)
         token_list = self.profile.get_token(option_id_list)
@@ -59,5 +59,5 @@ class SendNotification():
         event_list = self.event.get_notification_event_id()
         for event_id in event_list:
             today_event_id_list.append(event_id)
-            self.send_notification(event_id)
+            self.send_remind(event_id)
         return today_event_id_list

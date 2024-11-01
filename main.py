@@ -41,7 +41,7 @@ async def tick():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(tick, "interval", seconds=10)
+    scheduler.add_job(tick, "interval", seconds=60)
     scheduler.start()
     
     try:

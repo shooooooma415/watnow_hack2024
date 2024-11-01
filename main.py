@@ -1,21 +1,18 @@
 from fastapi import FastAPI,WebSocket,Request,status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+
 import schedule
-import time
+from contextlib import asynccontextmanager
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
 import os
 from sqlalchemy import create_engine, text
 from model.event import Location,EventID
 from model.websocket import FinishMessage
 from repository.event import Event
 from repository.distance import Distance
-from repository.add_votes import AddVotes
-from repository.get_attendance import GetAttendance
-from repository.profile import Profile
-from service.fetch_event import EventService
 from service.websocket import WebSocketService
-from service.fetch_profile import ProfileService
-from service.vote import Vote
 from dotenv import load_dotenv
 from typing import List, Dict
 from datetime import datetime,timezone
@@ -28,23 +25,31 @@ from routers.user import get_users_router
 from routers.attendance import get_attendances_router
 
 load_dotenv()
-
-app = FastAPI()
 supabase_url = os.getenv('SUPABASE_URL')
 
 engine = create_engine(supabase_url)
 event = Event(supabase_url)
-event_service = EventService(supabase_url)
 websocket_service = WebSocketService(supabase_url)
-profile_service = ProfileService(supabase_url)
 distances = Distance(supabase_url)
-vote = Vote(supabase_url)
-add_votes = AddVotes(supabase_url)
-get_attendance = GetAttendance(supabase_url)
-profile = Profile(supabase_url)
 
 today_event_id_list: List[int] = []
 
+async def tick():
+    """現在時刻を表示する関数"""
+    print(f"Tick! The async time is {datetime.now()}")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(tick, "interval", seconds=10)
+    scheduler.start()
+    
+    try:
+        yield
+    finally:
+        scheduler.shutdown()
+
+app = FastAPI(lifespan=lifespan)
 
 # ルーターの取得
 auth_router = get_auth_router(supabase_url)
@@ -164,3 +169,4 @@ notification=SendNotification(supabase_url)
 def send_notification():
     response = notification.send_remind(event_id=44)
     return response
+

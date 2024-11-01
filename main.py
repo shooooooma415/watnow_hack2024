@@ -2,7 +2,6 @@ from fastapi import FastAPI,WebSocket,Request,status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-import schedule
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -68,7 +67,7 @@ app.include_router(attendances_router)
 
 @app.get("/")
 def read_root():
-    return {"Hello": "うぃっす〜"}
+    return {"Hello": "どういたしまして"}
 
 @app.head("/monitor")
 def read_root():

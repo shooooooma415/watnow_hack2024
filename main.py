@@ -34,9 +34,11 @@ distances = Distance(supabase_url)
 
 today_event_id_list: List[int] = []
 
+from service.notification import SendNotification
+notification=SendNotification(supabase_url)
+
 async def tick():
-    """現在時刻を表示する関数"""
-    print(f"Tick! The async time is {datetime.now()}")
+    notification.send_remind(event_id=44)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

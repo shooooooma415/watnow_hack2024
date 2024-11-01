@@ -38,7 +38,7 @@ from service.notification import SendNotification
 notification=SendNotification(supabase_url)
 
 async def tick():
-    notification.send_remind(event_id=44)
+    notification.send_renew_aliase(57)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

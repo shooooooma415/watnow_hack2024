@@ -4,7 +4,6 @@ from repository.profile import Profile
 from repository.get_attendance import GetAttendance
 import firebase_admin
 from firebase_admin import messaging,credentials
-# from main import today_event_id_list
 
 cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
 # cred = credentials.Certificate("serviceAccountKey.json")
@@ -55,12 +54,12 @@ class SendNotification():
             else:
                 print(f"Message {idx + 1} failed with error: {resp.exception}")
     
-    # def send_messages(self):
-    #     event_list = self.event.get_notification_event_id()
-    #     for event_id in event_list:
-    #         today_event_id_list.append(event_id)
-    #         self.send_remind(event_id)
-    #     return today_event_id_list
+    async def send_remind_all_events(self,event_id_list:list[int]):
+        event_list = self.event.get_notification_event_id()
+        for event_id in event_list:
+            event_id_list.append(event_id)
+            self.send_remind(event_id)
+        return event_id_list
     
     def send_renew_aliase(self,user_id:int):
         token = self.profile.get_token(user_id)

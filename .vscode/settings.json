@@ -8,6 +8,7 @@
         "dotenv",
         "fastapi",
         "geopy",
+        "hoge",
         "pydantic",
         "signin",
         "sqlalchemy",

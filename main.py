@@ -1,23 +1,24 @@
-from fastapi import FastAPI,WebSocket,Request,status
+from fastapi import FastAPI, WebSocket, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-
+from sqlalchemy import create_engine
+from typing import List, Dict
+from datetime import datetime, timezone
+import json
 import os
-from sqlalchemy import create_engine, text
-from model.event import Location,EventID
+
+from dotenv import load_dotenv
+
+from model.event import Location, EventID
 from model.websocket import FinishMessage
 from repository.event import Event
 from repository.distance import Distance
 from service.websocket import WebSocketService
-from dotenv import load_dotenv
-from typing import List, Dict
-from datetime import datetime,timezone
-import json
+from service.notification import SendNotification
 
-# ルーターの呼び出し
 from routers.auth import get_auth_router
 from routers.event import get_event_router
 from routers.user import get_users_router
@@ -30,20 +31,14 @@ engine = create_engine(supabase_url)
 event = Event(supabase_url)
 websocket_service = WebSocketService(supabase_url)
 distances = Distance(supabase_url)
+notification = SendNotification(supabase_url)
 
 today_event_id_list: List[int] = []
-
-from service.notification import SendNotification
-notification=SendNotification(supabase_url)
-
-async def tick():
-    # notification.send_renew_aliase(57)
-    print("hoge")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(tick, "interval", seconds=60)
+    scheduler.add_job(lambda: notification.send_remind_all_events(today_event_id_list), "interval", hours=1)
     scheduler.start()
     
     try:
@@ -53,21 +48,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# ルーターの取得
-auth_router = get_auth_router(supabase_url)
-event_router = get_event_router(supabase_url)
-user_router = get_users_router(supabase_url)
-attendances_router = get_attendances_router(supabase_url)
-
-# ルーターの追加
-app.include_router(auth_router)
-app.include_router(event_router)
-app.include_router(user_router)
-app.include_router(attendances_router)
-
 @app.get("/")
 def read_root():
-    return {"Hello": "どういたしまして"}
+    return {"Hello": "うぃっす〜"}
 
 @app.head("/monitor")
 def read_root():

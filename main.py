@@ -38,7 +38,8 @@ from service.notification import SendNotification
 notification=SendNotification(supabase_url)
 
 async def tick():
-    notification.send_renew_aliase(57)
+    # notification.send_renew_aliase(57)
+    print("hoge")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

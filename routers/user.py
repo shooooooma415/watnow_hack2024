@@ -33,4 +33,8 @@ def get_users_router(supabase_url: str):
         profile.update_aliase_id(user_id,aliase_id)
         notification.send_renew_aliase(user_id)
     
+    @router.get("/board")
+    def get_all_user():
+        pass
+    
     return router

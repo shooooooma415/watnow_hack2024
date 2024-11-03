@@ -27,11 +27,12 @@ def get_users_router(supabase_url: str):
         profile.update_name(user_id,input.name)
         return SuccessResponse(is_success = True)
     
-    @router.put("/{user_id}/profile/aliase")
+    @router.put("/{user_id}/profile/aliase", response_model=SuccessResponse)
     def update_aliase(user_id:int):
         aliase_id = profile_service.judge_aliase(user_id)
         profile.update_aliase_id(user_id,aliase_id)
         notification.send_renew_aliase(user_id)
+        return SuccessResponse(is_success = True)
     
     @router.get("/board")
     def get_all_user():

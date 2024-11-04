@@ -35,7 +35,7 @@ class Auth:
                 )
                 user_id = int(result.scalar())
                 conn.execute(
-                    text("INSERT INTO user_alias(user_id, aliase) VALUES(:user_id, :aliase_id)"),
+                    text("INSERT INTO user_alias(user_id, aliase_id) VALUES(:user_id, :aliase_id)"),
                     {'user_id': user_id, 'aliase_id': aliase_id}
                 )
 

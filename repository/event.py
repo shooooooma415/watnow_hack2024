@@ -1,4 +1,4 @@
-from model.event import Author,Location,PostEvent,ArrivalTime,ArrivalTimeList,GetEvent
+from model.event import Author,Location,PostEvent,ArrivalTime,ArrivalTimeList,GetEvent,Events,Option,Participants
 from model.attendances import Attendances,AttendancesResponse
 from sqlalchemy import create_engine, text
 from typing import List,Dict,Optional
@@ -69,8 +69,13 @@ class Event():
             return event_data
     
     def get_event_id(self) -> List[int]:
+        dt_now = datetime.now(timezone.utc)
         with self.engine.connect() as conn:
-            result = conn.execute(text("SELECT id FROM events")).mappings()
+            result = conn.execute(text("""
+                                        SELECT id 
+                                        FROM events 
+                                        WHERE end_date_time > :current_time
+                                        """),{"current_time": dt_now}).mappings()
         event_ids = [row['id'] for row in result]
         
         return event_ids

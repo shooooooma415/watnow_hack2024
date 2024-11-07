@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, text
-from typing import Optional,List
+from typing import Optional,List,Dict
 from datetime import datetime
 from model.aliase import AliaseID
 
@@ -96,13 +96,13 @@ class Profile():
                 token_list.append(row[0])
         return token_list
     
-    def get_remind_tokens_for_aliased_users(self, option_id:int) -> List[str]:
-        token_list = []
+    def get_remind_tokens_for_aliased_users(self, option_id:int) -> Dict[int,str]:
+        token_dict = dict()
         with self.engine.connect() as conn:
             result = conn.execute(
                 text(
                     """
-                    SELECT u.token 
+                    SELECT u.id, u.token 
                     FROM votes v
                     JOIN users u ON v.user_id = u.id
                     JOIN user_alias ua ON ua.user_id = u.id
@@ -111,10 +111,13 @@ class Profile():
                     """
                     ),{"option_id": option_id, "aliase_id":AliaseID.ビギナー遅刻者.value}
             ).fetchall()
+            if not result:
+                return {}
             
             for row in result:
-                token_list.append(row[0])
-        return token_list
+                token_dict[row[0]] = row[1]
+                
+        return token_dict
     
     def update_name(self,user_id, name):
         with self.engine.connect() as conn:

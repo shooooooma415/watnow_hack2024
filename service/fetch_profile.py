@@ -2,7 +2,7 @@ from model.profile import Delay,UserProfile
 from model.aliase import AliaseID
 from repository.profile import Profile
 from datetime import timedelta
-from typing import Optional
+from typing import Optional,Dict
 
 
 class ProfileService():
@@ -97,3 +97,13 @@ class ProfileService():
             on_time_count=late_info.on_time_count,
             tikoku_point=tikoku_point
         )
+        
+    def fetch_point_and_tokens(self,option_id:int) -> Dict[str,int]:
+        point_token_dict = {}
+        token_dict = self.profile.get_remind_tokens_for_aliased_users(option_id)
+        
+        for user_id,token in token_dict.items():
+            point = self.calculate_late_point(user_id)
+            point_token_dict[token] = point
+            
+        return point_token_dict

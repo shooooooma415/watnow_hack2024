@@ -84,14 +84,13 @@ def add_event_id(event:EventID):
     today_event_id_list.append(event.event_id)
     return {"message": "Event ID added successfully", "today_event_id_list": today_event_id_list}
 
-@app.websocket("/ws/ranking")
-async def websocket_endpoint(websocket: WebSocket):
+@app.websocket("/ws/{event_id}/ranking")
+async def websocket_endpoint(event_id:int,websocket: WebSocket):
     await websocket.accept()
     
     connected_clients: Dict[int, WebSocket] = {}
     user_locations: Dict[int, Location] = {}
     
-    event_id = today_event_id_list[0]
     event_deadline_time = websocket_service.calculate_deadline(event_id)
     
     try:
@@ -104,7 +103,6 @@ async def websocket_endpoint(websocket: WebSocket):
             now = datetime.now(timezone.utc)
 
             if now >= event_deadline_time:
-                today_event_id_list.pop(0)
                 finish_message = {
                     "action": "tikokulympic_finished",
                     "message": "この遅刻リンピックは終了しました。"

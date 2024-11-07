@@ -2,6 +2,7 @@ from model.notification import Notification,RemindData,AliaseData
 from repository.event import Event
 from repository.profile import Profile
 from repository.get_attendance import GetAttendance
+from service.fetch_profile import ProfileService
 import firebase_admin
 from firebase_admin import messaging,credentials
 
@@ -14,6 +15,7 @@ class SendNotification():
         self.event = Event(supabase_url)
         self.profile = Profile(supabase_url)
         self.get_attendance = GetAttendance(supabase_url)
+        self.profile_service = ProfileService(supabase_url)
         
     def send_remind(self,event_id: int) -> None:
         event = self.event.get_event(event_id)
@@ -65,33 +67,32 @@ class SendNotification():
         print(f"Event IDs in today_event_id_list: {event_id_list}")
         return event_id_list
     
-    def send_caution_remind(self,event_id: int):
+    def send_caution_remind(self, event_id: int):
         event = self.event.get_event(event_id)
         option_id_list = self.get_attendance.get_attend_option_id(event_id)
-        token_list = self.profile.get_remind_tokens_for_aliased_users(option_id_list)
+        token_point_dict = self.profile_service.fetch_point_and_tokens(option_id_list)
         
-        notification = Notification(
-            title=f"明日の集合時間は{event.start_date_time.strftime('%H:%M')}です！",
-            body=f"{event.location_name}に遅れないように来ましょう！！"
+        notification_title = f"明日は{event.location_name}に{event.start_date_time.strftime('%H:%M')} 集合です！"
+        
+        for token, point in token_point_dict.items():
+            notification = Notification(
+                title=notification_title,
+                body=f"あなたの今の遅刻ポイントは「{point}」です！明日は遅れないようにしましょう！！"
             )
-        
-        message = messaging.MulticastMessage(
-                tokens=token_list,
+            
+            message = messaging.Message(
+                token=token,
                 notification=messaging.Notification(
                     title=notification.title,
                     body=notification.body
                 )
             )
-        
-        response = messaging.send_each_for_multicast(message)
-        print(f"Success count: {response.success_count}")
-        print(f"Failure count: {response.failure_count}")
-
-        for idx, resp in enumerate(response.responses):
-            if resp.success:
-                print(f"Message {idx + 1} sent successfully")
+            response = messaging.send(message)
+            if response:
+                print(f"Message to {token} sent successfully with point {point}")
             else:
-                print(f"Message {idx + 1} failed with error: {resp.exception}")
+                print(f"Message to {token} failed")
+
                 
     async def send_caution_all_events(self):
         event_list = self.event.get_notification_event_id()

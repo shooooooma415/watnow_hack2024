@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, text
 from typing import Optional,List
 from datetime import datetime
+from model.aliase import AliaseID
 
 class Profile():
     def __init__(self,supabase_url: str) -> None:
@@ -83,12 +84,32 @@ class Profile():
             
         return result[0] if result else None
     
-    def get_token_list(self, option_id:int) -> List[str]:
+    def get_remind_tokens(self, option_id:int) -> List[str]:
         token_list = []
         with self.engine.connect() as conn:
             result = conn.execute(
                 text("""SELECT u.token FROM votes v JOIN users u ON v.user_id = u.id WHERE v.option_id = :id"""),
                 {"id": option_id}
+            ).fetchall()
+            
+            for row in result:
+                token_list.append(row[0])
+        return token_list
+    
+    def get_remind_tokens_for_aliased_users(self, option_id:int) -> List[str]:
+        token_list = []
+        with self.engine.connect() as conn:
+            result = conn.execute(
+                text(
+                    """
+                    SELECT u.token 
+                    FROM votes v
+                    JOIN users u ON v.user_id = u.id
+                    JOIN user_alias ua ON ua.user_id = u.id
+                    WHERE v.option_id = :option_id
+                    AND ua.aliase_id <= :aliase_id
+                    """
+                    ),{"option_id": option_id, "aliase_id":AliaseID.ビギナー遅刻者.value}
             ).fetchall()
             
             for row in result:

@@ -40,17 +40,17 @@ class ProfileService():
                         on_time_count = on_time_p, 
                         late_percentage = late_rate)
 
-    def calculate_late_point(self,user_id:int) -> Optional[int]:
-        plus_time=[]
-        minus_time=[]
+    def calculate_late_point(self, user_id: int) -> Optional[int]:
+        plus_time = []
+        minus_time = []
         delay_time_list = self.profile.get_all_delay_time(user_id)
 
         for i in delay_time_list:
-            if i > 0:
-                plus_time.append(i)
+            delay_minutes = i.total_seconds() / 60
+            if delay_minutes > 0:
+                plus_time.append(delay_minutes)
             else:
-                i = abs(i)
-                minus_time.append(i)
+                minus_time.append(abs(delay_minutes))
         
         p_count = len(plus_time)
         m_count = len(minus_time)
@@ -61,6 +61,7 @@ class ProfileService():
         late_point = int(plus_total * (1 + 0.5 * (p_count - 1)) - minus_total * (1 + 0.2 * (m_count - 1)))
         
         return late_point
+
     
     def judge_aliase(self,user_id) -> Optional[int]:
         tikoku_point = self.calculate_late_point(user_id)

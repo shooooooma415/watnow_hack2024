@@ -16,8 +16,10 @@ from model.event import Location, EventID
 from model.websocket import FinishMessage
 from repository.event import Event
 from repository.distance import Distance
+from repository.profile import Profile
 from service.websocket import WebSocketService
 from service.notification import SendNotification
+from service.fetch_profile import ProfileService
 
 from routers.auth import get_auth_router
 from routers.event import get_event_router
@@ -31,14 +33,25 @@ engine = create_engine(supabase_url)
 event = Event(supabase_url)
 websocket_service = WebSocketService(supabase_url)
 distances = Distance(supabase_url)
+profile = Profile(supabase_url)
 notification = SendNotification(supabase_url)
+profile_service = ProfileService(supabase_url)
 
 today_event_id_list: List[int] = []
+
+async def send_reminders():
+    await notification.send_remind_all_events(today_event_id_list)
+    
+async def send_cautions():
+    await notification.send_caution_all_events()
+    
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(lambda: notification.send_remind_all_events(today_event_id_list), "interval", hours=1)
+    
+    scheduler.add_job(send_reminders, "cron", hour=22, minute=0)
+    scheduler.add_job(send_cautions, "cron", hour=23, minute=0)
     scheduler.start()
     
     try:
@@ -78,7 +91,6 @@ async def websocket_endpoint(websocket: WebSocket):
     connected_clients: Dict[int, WebSocket] = {}
     user_locations: Dict[int, Location] = {}
     
-    today_event_id_list.append(43)
     event_id = today_event_id_list[0]
     event_deadline_time = websocket_service.calculate_deadline(event_id)
     
@@ -97,11 +109,19 @@ async def websocket_endpoint(websocket: WebSocket):
                     "action": "tikokulympic_finished",
                     "message": "この遅刻リンピックは終了しました。"
                 }
-                for client_websocket in connected_clients.values():
-                    await client_websocket.send_text(json.dumps(finish_message))
+                
+                for user_id in connected_clients.keys():
+                    event.add_arrival_time(user_id, now, event_id)
+                    aliase_id = profile_service.judge_aliase(user_id)
+                    profile.update_aliase_id(user_id,aliase_id)
+                    notification.send_renew_aliase(user_id)
+                
                 distances.delete_all_distance()
+                
                 for client_websocket in connected_clients.values():
-                    await client_websocket.close()
+                    client_websocket.send_text(json.dumps(finish_message))
+                    client_websocket.close()
+                
 
                 connected_clients.clear()
                 break
@@ -141,7 +161,13 @@ async def websocket_endpoint(websocket: WebSocket):
                 distances.delete_distance(finish_message.user_id)
                 
                 await websocket_service.send_ranking(websocket)
-                event.add_arrival_time(finish_message, event_id)
+                
+                event.add_arrival_time(finish_message.user_id, finish_message.arrival_time, event_id)
+                
+                aliase_id = profile_service.judge_aliase(finish_message.user_id)
+                profile.update_aliase_id(finish_message.user_id,aliase_id)
+                notification.send_renew_aliase(finish_message.user_id)
+                
                 print("success")
                 
 

@@ -215,7 +215,7 @@ class Event():
                 conn.execute(
                     text("DELETE FROM events WHERE id = :event_id"),{"event_id": event_id})
     
-    def add_arrival_time(self,message:FinishMessage,event_id:int) -> None:
+    def add_arrival_time(self,user_id:int,arrival_time:datetime,event_id:int) -> None:
         with self.engine.connect() as conn:
             with conn.begin():
                 conn.execute(
@@ -225,7 +225,7 @@ class Event():
                         VALUES (:event_id,:user_id,:arrival_time)
                         """
                     ),
-                    {"event_id": event_id, "user_id": message.user_id, "arrival_time":message.arrival_time}
+                    {"event_id": event_id, "user_id": user_id, "arrival_time":arrival_time}
                     )
     
     def get_arrival_time_list(self,event_id) -> ArrivalTimeList:

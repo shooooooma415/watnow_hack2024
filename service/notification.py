@@ -18,10 +18,10 @@ class SendNotification():
     def send_remind(self,event_id: int) -> None:
         event = self.event.get_event(event_id)
         option_id_list = self.get_attendance.get_attend_option_id(event_id)
-        token_list = self.profile.get_token_list(option_id_list)
+        token_list = self.profile.get_remind_tokens(option_id_list)
         
         notification = Notification(
-            title=event.title,
+            title=f"明日は{event.title}です！",
             body=f"集合場所: {event.location_name}, 集合時間: {event.start_date_time.strftime('%H:%M')}"
             )
         
@@ -54,12 +54,52 @@ class SendNotification():
             else:
                 print(f"Message {idx + 1} failed with error: {resp.exception}")
     
-    async def send_remind_all_events(self,event_id_list:list[int]):
+    async def send_remind_all_events(self, event_id_list: list[int]):
         event_list = self.event.get_notification_event_id()
+        
         for event_id in event_list:
             event_id_list.append(event_id)
+            print(f"Sending reminder for event ID: {event_id}")
             self.send_remind(event_id)
+        
+        print(f"Event IDs in today_event_id_list: {event_id_list}")
         return event_id_list
+    
+    def send_caution_remind(self,event_id: int):
+        event = self.event.get_event(event_id)
+        option_id_list = self.get_attendance.get_attend_option_id(event_id)
+        token_list = self.profile.get_remind_tokens_for_aliased_users(option_id_list)
+        
+        notification = Notification(
+            title=f"明日の集合時間は{event.start_date_time.strftime('%H:%M')}です！",
+            body=f"{event.location_name}に遅れないように来ましょう！！"
+            )
+        
+        message = messaging.MulticastMessage(
+                tokens=token_list,
+                notification=messaging.Notification(
+                    title=notification.title,
+                    body=notification.body
+                )
+            )
+        
+        response = messaging.send_each_for_multicast(message)
+        print(f"Success count: {response.success_count}")
+        print(f"Failure count: {response.failure_count}")
+
+        for idx, resp in enumerate(response.responses):
+            if resp.success:
+                print(f"Message {idx + 1} sent successfully")
+            else:
+                print(f"Message {idx + 1} failed with error: {resp.exception}")
+                
+    async def send_caution_all_events(self):
+        event_list = self.event.get_notification_event_id()
+        for event_id in event_list:
+            self.send_caution_remind(event_id)
+            
+        return True
+
     
     def send_renew_aliase(self,user_id:int):
         token = self.profile.get_token(user_id)

@@ -40,7 +40,7 @@ profile_service = ProfileService(supabase_url)
 today_event_id_list: List[int] = []
 
 async def send_reminders():
-    await notification.send_remind_all_events(today_event_id_list)
+    await notification.send_remind_all_events()
     
 async def send_cautions():
     await notification.send_caution_all_events()

@@ -56,16 +56,12 @@ class SendNotification():
             else:
                 print(f"Message {idx + 1} failed with error: {resp.exception}")
     
-    async def send_remind_all_events(self, event_id_list: list[int]):
+    async def send_remind_all_events(self):
         event_list = self.event.get_notification_event_id()
         
         for event_id in event_list:
-            event_id_list.append(event_id)
             print(f"Sending reminder for event ID: {event_id}")
             self.send_remind(event_id)
-        
-        print(f"Event IDs in today_event_id_list: {event_id_list}")
-        return event_id_list
     
     def send_caution_remind(self, event_id: int):
         event = self.event.get_event(event_id)
@@ -98,8 +94,6 @@ class SendNotification():
         event_list = self.event.get_notification_event_id()
         for event_id in event_list:
             self.send_caution_remind(event_id)
-            
-        return True
 
     
     def send_renew_aliase(self,user_id:int):

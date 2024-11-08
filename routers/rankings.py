@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from model.rankings import TimeRanking
+from model.rankings import TimeRanking,CountRanking
 from service.fetch_ranking import FetchRanking
 
 
@@ -11,9 +11,9 @@ def get_rankings_router(supabase_url:str):
     def get_point_ranking():
         pass
     
-    @router.get("/count")
+    @router.get("/count",response_model=CountRanking)
     def get_count_ranking():
-        pass
+        return fetch_ranking.sort_count_ranking()
     
     @router.get("/time",response_model=TimeRanking)
     def get_time_ranking():

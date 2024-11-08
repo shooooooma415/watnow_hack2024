@@ -57,11 +57,11 @@ class FetchRanking():
                 skip += 1
 
             ranking_component = TimeRankingComponent(
-                id=user_id,
-                position=rank,
-                name=self.profile.get_name(user_id),
-                alias=self.profile.get_aliase(user_id) or "No alias",
-                time=delay_info.total_late_time
+                id = user_id,
+                position = rank,
+                name = self.profile.get_name(user_id),
+                alias = self.profile.get_aliase(user_id) or "No alias",
+                time = delay_info.total_late_time
             )
             ranking_list.append(ranking_component)
 
@@ -101,11 +101,11 @@ class FetchRanking():
                 skip += 1
 
             ranking_component = CountRankingComponent(
-                id=user_id,
-                position=rank,
-                name=self.profile.get_name(user_id),
-                alias=self.profile.get_aliase(user_id) or "No alias",
-                count=delay_info.total_late_time
+                id = user_id,
+                position = rank,
+                name = self.profile.get_name(user_id),
+                alias = self.profile.get_aliase(user_id) or "No alias",
+                count = delay_info.total_late_time
             )
             ranking_list.append(ranking_component)
 
@@ -114,7 +114,43 @@ class FetchRanking():
 
         return CountRanking(ranking=ranking_list)
     
-    def sort_point_ranking(self):
+    def sort_point_ranking(self, limit: int = 3) -> Optional[PointRanking]:
         user_point_dict = self.get_point_dict()
         
-        pass
+        sorted_user_points = sorted(
+            user_point_dict.items(),
+            key=lambda item: item[1],
+            reverse=True
+        )
+
+        ranking_list = []
+        current_rank = 0
+        previous_point = None
+        skip = 1
+        count = 0
+
+        for user_id, point in sorted_user_points:
+            if limit and count >= limit and point != previous_point:
+                break
+
+            if point != previous_point:
+                current_rank += skip
+                rank = current_rank
+                skip = 1
+            else:
+                rank = current_rank
+                skip += 1
+
+            ranking_component = PointRankingComponent(
+                id = user_id,
+                position = rank,
+                name = self.profile.get_name(user_id),
+                alias = self.profile.get_aliase(user_id) or "No alias",
+                point = point
+            )
+            ranking_list.append(ranking_component)
+
+            previous_point = point
+            count += 1
+
+        return PointRanking(ranking=ranking_list)

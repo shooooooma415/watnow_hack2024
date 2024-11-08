@@ -9,7 +9,7 @@ class FetchRanking():
         self.profile = Profile(supabase_url)
         self.profile_service = ProfileService(supabase_url)
         
-    def get_time_dict(self) -> Dict[int,Delay]:
+    def get_delay_dict(self) -> Dict[int,Delay]:
         user_time_dict = {}
         user_ids = self.profile.get_all_user_id()
         for user_id in user_ids:
@@ -18,7 +18,7 @@ class FetchRanking():
         return user_time_dict
     
     def sort_time_ranking(self,limit: int = 3) -> Optional[TimeRanking]:
-        user_time_dict = self.get_time_dict()
+        user_time_dict = self.get_delay_dict()
         
         sorted_user_time = sorted(
         user_time_dict.items(),

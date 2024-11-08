@@ -84,7 +84,7 @@ def add_event_id(event:EventID):
     today_event_id_list.append(event.event_id)
     return {"message": "Event ID added successfully", "today_event_id_list": today_event_id_list}
 
-@app.websocket("/ws/{event_id}/ranking")
+@app.websocket("/ws/events/{event_id}/ranking")
 async def websocket_endpoint(event_id:int,websocket: WebSocket):
     await websocket.accept()
     

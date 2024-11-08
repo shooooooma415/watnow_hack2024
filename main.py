@@ -25,6 +25,7 @@ from routers.auth import get_auth_router
 from routers.event import get_event_router
 from routers.user import get_users_router
 from routers.attendance import get_attendances_router
+from routers.rankings import get_rankings_router
 
 load_dotenv()
 supabase_url = os.getenv('SUPABASE_URL')
@@ -65,6 +66,7 @@ app.include_router(get_auth_router(supabase_url))
 app.include_router(get_event_router(supabase_url))
 app.include_router(get_users_router(supabase_url))
 app.include_router(get_attendances_router(supabase_url))
+app.include_router(get_rankings_router(supabase_url))
 
 @app.get("/")
 def read_root():

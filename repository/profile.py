@@ -153,3 +153,9 @@ class Profile():
                     {"aliase_id":aliase_id,"user_id": user_id}
                 )
         # return "success" #ここは要件にちょって変える
+        
+    def get_all_user_id(self) ->List[int]:
+        with self.engine.connect() as conn:
+            result = conn.execute(text("SELECT id from users")).fetchall()
+            user_ids = [row[0] for row in result]
+        return user_ids

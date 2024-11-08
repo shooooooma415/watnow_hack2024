@@ -9,7 +9,7 @@ class ProfileService():
     def __init__(self, supabase_url: str) -> None:
         self.profile = Profile(supabase_url)
         
-    def calculate_late_time(self,user_id) -> Optional[Delay]:
+    def calculate_late_time(self,user_id:int) -> Optional[Delay]:
         delay_time = self.profile.get_delay_time(user_id)
 
         if delay_time is None:

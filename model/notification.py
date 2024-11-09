@@ -18,3 +18,6 @@ class RemindData(BaseModel):
 class AliaseData(BaseModel):
     content: str
     aliase: str
+    
+class CautionData(BaseModel):
+    content:str

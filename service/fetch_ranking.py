@@ -3,12 +3,13 @@ from model.rankings import TimeRanking,TimeRankingComponent,CountRanking,CountRa
 from repository.profile import Profile
 from service.fetch_profile import ProfileService
 from typing import Dict,Optional
+import time
 
 class FetchRanking():
     def __init__(self,supabase_url:str) -> None:
         self.profile = Profile(supabase_url)
         self.profile_service = ProfileService(supabase_url)
-        
+    
     def get_delay_dict(self) -> Dict[int,Delay]:
         user_time_dict = {}
         user_ids = self.profile.get_all_user_id()
@@ -19,9 +20,12 @@ class FetchRanking():
     
     def get_point_dict(self) -> Dict[int,int]:
         user_point_dict = {}
-        user_ids = self.profile.get_all_user_id()
+        user_ids = self.profile.get_user_names_and_aliases()
         for user_id in user_ids:
+            start = time.perf_counter()
             point = self.profile_service.calculate_late_point(user_id)
+            end = time.perf_counter()
+            print("calculate_late_point: " + '{:.2f}'.format((end-start)))
             user_point_dict[user_id] = point
         
         return user_point_dict
@@ -115,20 +119,22 @@ class FetchRanking():
         return CountRanking(ranking=ranking_list)
     
     def sort_point_ranking(self, limit: int = 3) -> Optional[PointRanking]:
+        start1 = time.perf_counter()
+        
         user_point_dict = self.get_point_dict()
         
-        sorted_user_points = sorted(
-            user_point_dict.items(),
-            key=lambda item: item[1],
-            reverse=True
-        )
-
+        sorted_user_points = sorted(user_point_dict.items(), key=lambda item: item[1], reverse=True)
+        
+        user_names = {user_id: self.profile.get_name(user_id) for user_id, _ in sorted_user_points}
+        user_aliases = {user_id: self.profile.get_aliase(user_id) or "No alias" for user_id, _ in sorted_user_points}
+        
         ranking_list = []
         current_rank = 0
         previous_point = None
         skip = 1
         count = 0
 
+        start2 = time.perf_counter()
         for user_id, point in sorted_user_points:
             if limit and count >= limit and point != previous_point:
                 break
@@ -142,15 +148,20 @@ class FetchRanking():
                 skip += 1
 
             ranking_component = PointRankingComponent(
-                id = user_id,
-                position = rank,
-                name = self.profile.get_name(user_id),
-                alias = self.profile.get_aliase(user_id) or "No alias",
-                point = point
+                id=user_id,
+                position=rank,
+                name=user_names[user_id],
+                alias=user_aliases[user_id],
+                point=point
             )
             ranking_list.append(ranking_component)
 
             previous_point = point
             count += 1
-
+        
+        end2 = time.perf_counter()
+        end1 = time.perf_counter()
+        print("Ranking generation time: " + '{:.2f}'.format((end2 - start2)))
+        print("get_point_dict time: " + '{:.2f}'.format((end1 - start1)))
+        
         return PointRanking(ranking=ranking_list)

@@ -41,24 +41,24 @@ class ProfileService():
                         late_percentage = late_rate)
 
     def calculate_late_point(self, user_id: int) -> Optional[int]:
-        plus_time = []
-        minus_time = []
-        delay_time_list = self.profile.get_all_delay_time(user_id)
+        plus_total = 0
+        minus_total = 0
+        p_count = 0
+        m_count = 0
 
-        for i in delay_time_list:
-            delay_minutes = i.total_seconds() / 60
+        for delay in self.profile.get_all_delay_time(user_id):
+            delay_minutes = delay.total_seconds() / 60
             if delay_minutes > 0:
-                plus_time.append(delay_minutes)
+                plus_total += delay_minutes
+                p_count += 1
             else:
-                minus_time.append(abs(delay_minutes))
+                minus_total += abs(delay_minutes)
+                m_count += 1
+
         
-        p_count = len(plus_time)
-        m_count = len(minus_time)
-        
-        plus_total = sum(plus_time)
-        minus_total = sum(minus_time)
-        
-        late_point = int(plus_total * (1 + 0.5 * (p_count - 1)) - minus_total * (1 + 0.2 * (m_count - 1)))
+        late_point = int(
+            plus_total * (1 + 0.5 * (p_count - 1)) - minus_total * (1 + 0.2 * (m_count - 1))
+        )
         
         return late_point
 

@@ -1,10 +1,10 @@
-from model.notification import Notification,RemindData,AliaseData
+from model.notification import Notification,RemindData,AliaseData,CautionData
 from repository.event import Event
-from repository.profile import Profile
 from repository.get_attendance import GetAttendance
 from service.fetch_profile import ProfileService
 import firebase_admin
 from firebase_admin import messaging,credentials
+from datetime import timedelta
 
 cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
 # cred = credentials.Certificate("serviceAccountKey.json")
@@ -13,19 +13,21 @@ firebase_admin.initialize_app(cred)
 class SendNotification():
     def __init__(self,supabase_url: str) -> None:
         self.event = Event(supabase_url)
-        self.profile = Profile(supabase_url)
         self.get_attendance = GetAttendance(supabase_url)
         self.profile_service = ProfileService(supabase_url)
         
     def send_remind(self,event_id: int) -> None:
         event = self.event.get_event(event_id)
         option_id_list = self.get_attendance.get_attend_option_id(event_id)
-        token_list = self.profile.get_remind_tokens(option_id_list)
+        token_list = self.profile_service.profile.get_remind_tokens(option_id_list)
+        adjusted_start_time = event.start_date_time + timedelta(hours=9)
         
         notification = Notification(
             title=f"明日は{event.title}です！",
-            body=f"集合場所: {event.location_name}, 集合時間: {event.start_date_time.strftime('%H:%M')}"
+            body=f"集合場所: {event.location_name}, 集合時間: {adjusted_start_time.strftime('%H:%M')}"
             )
+        
+        start_time_iso = event.start_date_time.replace(tzinfo=None).isoformat() + "Z"
         
         data = RemindData(
             content = "remind",
@@ -34,7 +36,7 @@ class SendNotification():
             location=event.location_name,
             latitude=str(event.latitude),
             longitude=str(event.longitude),
-            start_time=str(event.start_date_time.strftime('%Y-%m-%d %H:%M:%S'))
+            start_time=str(start_time_iso)
             )
         
         message = messaging.MulticastMessage(
@@ -67,8 +69,13 @@ class SendNotification():
         event = self.event.get_event(event_id)
         option_id_list = self.get_attendance.get_attend_option_id(event_id)
         token_point_dict = self.profile_service.fetch_point_and_tokens(option_id_list)
+        adjusted_start_time = event.start_date_time + timedelta(hours=9)
         
-        notification_title = f"明日は{event.location_name}に{event.start_date_time.strftime('%H:%M')} 集合です！"
+        notification_title = f"明日は{event.location_name}に{adjusted_start_time.strftime('%H:%M')} 集合です！"
+        
+        data = CautionData(
+            content = "caution"
+        )
         
         for token, point in token_point_dict.items():
             notification = Notification(
@@ -77,6 +84,7 @@ class SendNotification():
             )
             
             message = messaging.Message(
+                data=data.model_dump(),
                 token=token,
                 notification=messaging.Notification(
                     title=notification.title,
@@ -97,8 +105,8 @@ class SendNotification():
 
     
     def send_renew_aliase(self,user_id:int):
-        token = self.profile.get_token(user_id)
-        aliase = self.profile.get_aliase(user_id)
+        token = self.profile_service.profile.get_token(user_id)
+        aliase = self.profile_service.profile.get_aliase(user_id)
         
         notification = Notification(
             title = f"「{aliase}」が付与されました",

@@ -34,8 +34,8 @@ async def send_cautions():
 async def lifespan(app: FastAPI):
     scheduler = AsyncIOScheduler()
     
-    scheduler.add_job(send_reminders, "cron", hour=22, minute=0)
-    scheduler.add_job(send_cautions, "cron", hour=23, minute=0)
+    scheduler.add_job(send_reminders, "cron", hour=3, minute=19)
+    scheduler.add_job(send_cautions, "cron", hour=1, minute=27)
     scheduler.start()
     
     try:

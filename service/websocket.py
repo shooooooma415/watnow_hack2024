@@ -49,7 +49,7 @@ class WebSocketService:
                 "position": idx + 1,
                 "user_id": user['user_id'],
                 "name": self.profile.get_name(user['user_id']),
-                "alias": None,
+                "alias": self.profile.get_aliase(user['user_id']),
                 "distance": user['distance']
             }
             for idx, user in enumerate(sorted_distances)

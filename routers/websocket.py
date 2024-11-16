@@ -64,6 +64,7 @@ def get_websocket_router(supabase_url: str):
 
                 data = await websocket.receive_text()
                 message = json.loads(data)
+                notified_users: set[int] = set()
 
                 if message["action"] == "update_location":
                     user_id = message["user_id"]
@@ -109,6 +110,9 @@ def get_websocket_router(supabase_url: str):
                 if now >= event_start_time:
                     for user_id in connected_clients.keys():
                         notification.send_next_aliase(user_id)
+                        if user_id not in notified_users:  # 未通知のユーザーのみ対象
+                            notification.send_next_aliase(user_id)
+                            notified_users.add(user_id)
                         
 
         except Exception as e:

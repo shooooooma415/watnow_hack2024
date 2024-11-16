@@ -70,18 +70,22 @@ class EventService():
     
     def fetch_arrival_time_ranking(self, event_id: int) -> List[ArrivalTimeRanking]:
         start_time = self.event.get_start_time(event_id)
+        if not start_time:
+            raise ValueError(f"Start time not found for event ID {event_id}")
         
-        arrival_time_list = self.event.get_arrival_time_list(event_id)
-        if not arrival_time_list:
+        arrival_time_list_obj = self.event.get_arrival_time_list(event_id)
+        if not arrival_time_list_obj.arrival_time_list:
             return []
 
         ranking_list = []
         
-        for idx, arrival_time_obj in enumerate(arrival_time_list):
+        for idx, arrival_time_obj in enumerate(arrival_time_list_obj.arrival_time_list):
             user_id = arrival_time_obj.user_id
-            name = self.profile.get_name(user_id)
-            alias = self.profile.get_aliase(user_id)
             arrival_time = arrival_time_obj.arrival_time
+
+            name = self.profile.get_name(user_id)
+            alias = self.profile.get_aliase(user_id) or "No alias"
+
             time_difference = int((arrival_time - start_time).total_seconds() / 60)
 
             ranking = ArrivalTimeRanking(
@@ -94,6 +98,8 @@ class EventService():
             ranking_list.append(ranking)
 
         return ranking_list
+
+
     
     def fetch_finished_events(self) -> FinishedEvents:
         event_ids = self.event.get_finished_event_id()

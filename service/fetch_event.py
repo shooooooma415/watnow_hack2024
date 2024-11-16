@@ -67,25 +67,17 @@ class EventService():
             event_list.append(event)
         return Events(events=event_list)
     
-    def sort_arrival_time_list(self, event_id: int) -> ArrivalTimeList:
-        arrival_time_list = self.event.get_arrival_time_list(event_id).arrival_time_list
-        
-        if arrival_time_list is None:
-            return ArrivalTimeList(arrival_time_list=[])
-        
-        sorted_arrival_time_list = sorted(arrival_time_list, key=lambda x: x.arrival_time)
-        return ArrivalTimeList(arrival_time_list=sorted_arrival_time_list)
     
     def fetch_arrival_time_ranking(self, event_id: int) -> List[ArrivalTimeRanking]:
         start_time = self.event.get_start_time(event_id)
         
-        sorted_arrival_time_list = self.sort_arrival_time_list(event_id).arrival_time_list
-        if not sorted_arrival_time_list:
+        arrival_time_list = self.event.get_arrival_time_list(event_id)
+        if not arrival_time_list:
             return []
 
         ranking_list = []
         
-        for idx, arrival_time_obj in enumerate(sorted_arrival_time_list):
+        for idx, arrival_time_obj in enumerate(arrival_time_list):
             user_id = arrival_time_obj.user_id
             name = self.profile.get_name(user_id)
             alias = self.profile.get_aliase(user_id)

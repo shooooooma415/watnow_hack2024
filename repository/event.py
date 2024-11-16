@@ -243,8 +243,14 @@ class Event():
     def get_arrival_time_list(self,event_id) -> ArrivalTimeList:
         with self.engine.connect() as conn:
             result = conn.execute(
-                text("SELECT user_id,arrival_time FROM attendances WHERE event_id = :event_id"),
-                {"event_id": event_id}
+                text(
+                    """
+                    SELECT user_id,arrival_time 
+                    FROM attendances
+                    WHERE event_id = :event_id
+                    ORDER BY arrival_time ASC
+                    """
+                    ),{"event_id": event_id}
             ).mappings().fetchall()
 
         arrival_time_list = [

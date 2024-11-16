@@ -20,12 +20,11 @@ class FetchRanking():
     
     def get_point_dict(self) -> Dict[int,int]:
         user_point_dict = {}
-        user_ids = self.profile.get_user_names_and_aliases()
+        user_ids = self.profile.get_all_user_id()
         for user_id in user_ids:
             start = time.perf_counter()
             point = self.profile_service.calculate_late_point(user_id)
             end = time.perf_counter()
-            print("calculate_late_point: " + '{:.2f}'.format((end-start)))
             user_point_dict[user_id] = point
         
         return user_point_dict

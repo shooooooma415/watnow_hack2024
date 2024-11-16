@@ -9,6 +9,13 @@ class ProfileService():
     def __init__(self, supabase_url: str) -> None:
         self.profile = Profile(supabase_url)
         
+        self.alias_points = {
+            AliaseID.遅刻王: 401,
+            AliaseID.CTO: 101,
+            AliaseID.遅刻インターン生: 21,
+            AliaseID.ビギナー遅刻者: 1,
+        }
+        
     def calculate_late_time(self,user_id:int) -> Optional[Delay]:
         delay_time = self.profile.get_delay_time(user_id)
 
@@ -108,3 +115,15 @@ class ProfileService():
             
         return point_token_dict
     
+    def find_next_alias(self,tikoku_point:int) -> Optional[str]:
+        for alias, points_required in sorted(self.alias_points.items(), key=lambda x: x[1]):
+            if tikoku_point < points_required:
+                return alias.name
+        
+        return alias.遅刻王
+    
+    def calculate_minutes_to_next_alias(self, user_id:int):
+        tikoku_point = self.calculate_late_point(user_id)
+        late_time = self.calculate_late_time(user_id)
+        
+        

@@ -21,7 +21,7 @@ def get_websocket_router(supabase_url: str):
     profile_service = ProfileService(supabase_url)
     event_service = EventService(supabase_url)
         
-    @router.websocket("/ranking")
+    @router.websocket("/ranking/{event_id}")
     async def websocket_endpoint(event_id:int,websocket: WebSocket):
         await websocket.accept()
         

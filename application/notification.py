@@ -1,13 +1,12 @@
 from model.notification import Notification,RemindData,AliaseData,CautionData
-from repository.event import Event
-from repository.get_attendance import GetAttendance
+from service.fetch_event import Event,GetAttendance
 from service.fetch_profile import ProfileService
 import firebase_admin
 from firebase_admin import messaging,credentials
 from datetime import timedelta
 
-# cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
-cred = credentials.Certificate("serviceAccountKey.json")
+cred = credentials.Certificate("/etc/secrets/serviceAccountKey.json")
+# cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 
 class SendNotification():
@@ -120,6 +119,26 @@ class SendNotification():
         
         message = messaging.Message(
                 data=data.model_dump(),
+                token=token,
+                notification=messaging.Notification(
+                    title=notification.title,
+                    body=notification.body
+                )
+            )
+        response = messaging.send(message)
+
+        return response
+    
+    def send_next_aliase(self,user_id:int):
+        next_aliase, required_delay_time = self.profile_service.calculate_required_delay_time(user_id)
+        token = self.profile_service.profile.get_token(user_id)
+        
+        notification = Notification(
+            title = "🚨 遅刻が確定しました！ 🚨",
+            body = f"{required_delay_time}分遅刻してしまうと称号が{next_aliase}になってしまいます！急いで💦💦"
+        )
+        
+        message = messaging.Message(
                 token=token,
                 notification=messaging.Notification(
                     title=notification.title,

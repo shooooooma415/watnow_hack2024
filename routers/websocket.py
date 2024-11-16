@@ -3,8 +3,8 @@ from fastapi import APIRouter,WebSocket
 from model.event import Location
 from model.websocket import FinishMessage
 from repository.distance import Distance
-from service.websocket import WebSocketService
 from application.notification import SendNotification
+from service.websocket import WebSocketService
 from service.fetch_profile import ProfileService
 from service.fetch_event import EventService
 
@@ -29,6 +29,7 @@ def get_websocket_router(supabase_url: str):
         user_locations: Dict[int, Location] = {}
         
         event_deadline_time = websocket_service.calculate_deadline(event_id)
+        event_start_time = websocket_service.event.get_start_time(event_id)
         
         try:
             await websocket.send_text(json.dumps({
@@ -105,6 +106,10 @@ def get_websocket_router(supabase_url: str):
                     
                     print("success")
                     
+                if now >= event_start_time:
+                    for user_id in connected_clients.keys():
+                        notification.send_next_aliase(user_id)
+                        
 
         except Exception as e:
             print(f"WebSocket error: {e}")

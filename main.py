@@ -19,7 +19,6 @@ from routers.websocket import get_websocket_router
 
 load_dotenv()
 supabase_url = os.getenv('SUPABASE_URL')
-
 engine = create_engine(supabase_url)
 notification = SendNotification(supabase_url)
 
@@ -70,3 +69,12 @@ def send_notification(event_id:int):
     response = notification.send_remind(event_id)
     return response
 
+
+from service.fetch_profile import ProfileService
+
+profile_service = ProfileService(supabase_url)
+
+@app.get("/check/{user_id}")
+def send_notification(user_id:int):
+    response = notification.send_next_aliase(user_id)
+    return response

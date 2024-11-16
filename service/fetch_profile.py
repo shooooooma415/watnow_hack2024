@@ -2,7 +2,7 @@ from model.profile import Delay,UserProfile
 from model.aliase import AliaseID
 from repository.profile import Profile
 from datetime import timedelta
-from typing import Optional,Dict
+from typing import Optional,Dict,Tuple
 
 
 class ProfileService():
@@ -14,6 +14,9 @@ class ProfileService():
             AliaseID.CTO: 101,
             AliaseID.遅刻インターン生: 21,
             AliaseID.ビギナー遅刻者: 1,
+            AliaseID.健常者:-1,
+            AliaseID.watnowの光:-51,
+            AliaseID.無遅刻ゴールド:-101
         }
         
     def calculate_late_time(self,user_id:int) -> Optional[Delay]:
@@ -122,8 +125,31 @@ class ProfileService():
         
         return alias.遅刻王
     
-    def calculate_minutes_to_next_alias(self, user_id:int):
-        tikoku_point = self.calculate_late_point(user_id)
-        late_time = self.calculate_late_time(user_id)
+    def calculate_required_delay_time(self, user_id:int) -> Tuple[str, int]:
         
+        delay_times = self.profile.get_all_delay_time(user_id)
         
+        plus_total = 0
+        minus_total = 0
+        p_count = 0
+        m_count = 0
+
+        for delay in delay_times:
+            delay_minutes = delay.total_seconds() / 60
+            if delay_minutes > 0:
+                plus_total += delay_minutes
+                p_count += 1
+            else:
+                minus_total += abs(delay_minutes)
+                m_count += 1
+                
+        late_point = int(
+            plus_total * (1 + 0.5 * (p_count - 1)) - minus_total * (1 + 0.2 * (m_count - 1))
+        )
+        
+        next_aliase = self.find_next_alias(late_point)
+        next_aliase_point = self.alias_points[AliaseID[next_aliase]]
+        
+        required_delay_time = (next_aliase_point + minus_total*(1+0.2*(m_count-1)))/1 + 0.5 * p_count
+        
+        return next_aliase, int(required_delay_time)

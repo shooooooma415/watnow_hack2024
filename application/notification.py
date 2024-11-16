@@ -15,7 +15,7 @@ class SendNotification():
         self.get_attendance = GetAttendance(supabase_url)
         self.profile_service = ProfileService(supabase_url)
         
-    def send_remind(self,event_id: int) -> None:
+    async def send_remind(self,event_id: int) -> None:
         event = self.event.get_event(event_id)
         option_id_list = self.get_attendance.get_attend_option_id(event_id)
         token_list = self.profile_service.profile.get_remind_tokens(option_id_list)
@@ -39,13 +39,18 @@ class SendNotification():
             )
         
         message = messaging.MulticastMessage(
-                data=data.model_dump(),
-                tokens=token_list,
-                notification=messaging.Notification(
-                    title=notification.title,
-                    body=notification.body
+            data=data.model_dump(),
+            tokens=token_list,
+            notification=messaging.Notification(
+                title=notification.title,
+                body=notification.body
+            ),
+            apns=messaging.APNSConfig(
+                payload=messaging.APNSPayload(
+                    aps=messaging.Aps(content_available=True)
                 )
             )
+        )
         
         response = messaging.send_each_for_multicast(message)
         print(f"Success count: {response.success_count}")

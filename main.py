@@ -23,7 +23,7 @@ engine = create_engine(supabase_url)
 notification = SendNotification(supabase_url)
 
 async def send_reminders():
-    await notification.send_remind_all_events()
+    await notification.send_remind(62)
     
 async def send_cautions():
     await notification.send_caution_all_events()

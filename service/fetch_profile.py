@@ -107,3 +107,4 @@ class ProfileService():
             point_token_dict[token] = point
             
         return point_token_dict
+    

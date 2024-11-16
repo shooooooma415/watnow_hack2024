@@ -1,11 +1,10 @@
 from repository.event import Event
 from repository.get_attendance import GetAttendance
 from repository.profile import Profile
-from model.event import Participants
-from typing import List,Optional
-from model.event import FetchEvent, Events,Option,ArrivalTime,ArrivalTimeList,ArrivalTimeRanking
+from model.event import Participants,FinishedEvents
+from typing import List
+from model.event import FetchEvent, Events,Option,ArrivalTimeList,ArrivalTimeRanking
 from sqlalchemy import create_engine
-from datetime import timezone,timedelta
 
 class EventService():
     def __init__(self, supabase_url: str) -> None:
@@ -103,3 +102,11 @@ class EventService():
             ranking_list.append(ranking)
 
         return ranking_list
+    
+    def fetch_finished_events(self) -> FinishedEvents:
+        event_ids = self.event.get_finished_event_id()
+        event_list = []
+        for event_id in event_ids:
+            event = self.event.get_finished_event(event_id)
+            event_list.append(event)
+        return FinishedEvents(events=event_list)

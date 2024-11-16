@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from model.event import PostEvent,Events,EventResponse,ArrivalTimeRanking
+from model.event import PostEvent,Events,EventResponse,ArrivalTimeRanking,FinishedEvents
 from model.auth import SuccessResponse
 from model.attendances import RequestVote
 from service.fetch_event import EventService
@@ -16,6 +16,11 @@ def get_event_router(supabase_url: str):
     @router.get("/board",response_model = Events)
     def get_events_board():
         events_board = event_service.fetch_all_events()
+        return events_board
+    
+    @router.get("/board/finished",response_model = FinishedEvents)
+    def get_finished_events_board():
+        events_board = event_service.fetch_finished_events()
         return events_board
 
     @router.post("",response_model=EventResponse)

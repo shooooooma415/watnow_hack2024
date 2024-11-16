@@ -4,7 +4,7 @@ from model.event import Location
 from model.websocket import FinishMessage
 from repository.distance import Distance
 from service.websocket import WebSocketService
-from service.notification import SendNotification
+from application.notification import SendNotification
 from service.fetch_profile import ProfileService
 from service.fetch_event import EventService
 

@@ -94,3 +94,14 @@ class ArrivalTimeRanking(BaseModel):
     name: str
     alias: Optional[str] = None
     arrival_time: int
+    
+class GetFinishedEvent(BaseModel):
+    id: Optional[int]
+    title: Optional[str]
+    description: Optional[str]
+    start_date_time: Optional[datetime]
+    location_name: Optional[str]
+    
+class FinishedEvents(BaseModel):
+    events: List[GetFinishedEvent]
+    

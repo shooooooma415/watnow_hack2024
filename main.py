@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 import os
 from dotenv import load_dotenv
 
-from service.notification import SendNotification
+from application.notification import SendNotification
 
 from routers.auth import get_auth_router
 from routers.event import get_event_router

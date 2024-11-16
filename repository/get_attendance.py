@@ -50,7 +50,7 @@ class GetAttendance():
             for row in result:
                 response = row[0]
         if result:
-            return result[0][0]
+            return response
         else:
             return None
     

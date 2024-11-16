@@ -1,4 +1,4 @@
-from model.event import Author,Location,PostEvent,ArrivalTime,ArrivalTimeList,GetEvent,Events,Option,Participants
+from model.event import Author,Location,PostEvent,ArrivalTime,ArrivalTimeList,GetEvent,GetFinishedEvent
 from model.attendances import Attendances,AttendancesResponse
 from sqlalchemy import create_engine, text
 from typing import List,Dict,Optional
@@ -75,6 +75,18 @@ class Event():
                                         SELECT id 
                                         FROM events 
                                         WHERE end_date_time > :current_time
+                                        """),{"current_time": dt_now}).mappings()
+        event_ids = [row['id'] for row in result]
+        
+        return event_ids
+    
+    def get_finished_event_id(self) -> List[int]:
+        dt_now = datetime.now(timezone.utc)
+        with self.engine.connect() as conn:
+            result = conn.execute(text("""
+                                        SELECT id 
+                                        FROM events 
+                                        WHERE end_date_time < :current_time
                                         """),{"current_time": dt_now}).mappings()
         event_ids = [row['id'] for row in result]
         
@@ -271,3 +283,30 @@ class Event():
                 return AttendancesResponse(message="Attendance data retrieved successfully")
             else:
                 return AttendancesResponse(message="No attendance found for this event and user.")
+            
+    def get_finished_event(self, finished_event_id: int) -> Optional[GetFinishedEvent]:
+        with self.engine.connect() as conn:
+            result = conn.execute(text("""
+                SELECT
+                    title, 
+                    description, 
+                    start_date_time, 
+                    location_name, 
+                    message
+                FROM events
+                WHERE id = :event_id
+                """), 
+            {"event_id": finished_event_id}).mappings().first()
+            
+            if result is None:
+                return None
+            
+            event_data = GetFinishedEvent(
+                id = finished_event_id,
+                title=result.get('title'),
+                description=result.get('description'),
+                start_date_time=result.get('start_date_time'),
+                location_name=result.get('location_name'), 
+            )
+            
+            return event_data

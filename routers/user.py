@@ -2,7 +2,7 @@ from fastapi import APIRouter,HTTPException
 from model.profile import UserProfile,Name
 from model.auth import SuccessResponse
 from service.fetch_profile import ProfileService
-from service.notification import SendNotification
+from application.notification import SendNotification
 
 def get_users_router(supabase_url: str):
     router = APIRouter(prefix="/users", tags=["Users"])

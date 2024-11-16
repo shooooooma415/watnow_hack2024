@@ -73,7 +73,7 @@ class SendNotification():
         notification_title = f"明日は{event.location_name}に{adjusted_start_time.strftime('%H:%M')} 集合です！"
         
         data = CautionData(
-            content = "caution"
+            content = "Re-remind"
         )
         
         for token, point in token_point_dict.items():
@@ -138,8 +138,13 @@ class SendNotification():
             body = f"{required_delay_time}分遅刻してしまうと称号が{next_aliase}になってしまいます！急いで💦💦"
         )
         
+        data = CautionData(
+            content = "caution"
+        )
+        
         message = messaging.Message(
                 token=token,
+                data=data.model_dump(),
                 notification=messaging.Notification(
                     title=notification.title,
                     body=notification.body

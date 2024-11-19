@@ -1,0 +1,21 @@
+{
+    "cSpell.words": [
+        "aliase",
+        "apscheduler",
+        "arrial",
+        "dlat",
+        "dlon",
+        "dotenv",
+        "fastapi",
+        "geopy",
+        "hoge",
+        "pydantic",
+        "signin",
+        "sqlalchemy",
+        "supabase",
+        "tikoku",
+        "tikokulympic",
+        "uvicorn",
+        "watnow"
+    ]
+}

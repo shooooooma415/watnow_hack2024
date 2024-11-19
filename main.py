@@ -1,54 +1,80 @@
-from fastapi import FastAPI
-from sqlalchemy import create_engine, text
-from model.event import Events,Event
-from model.profile import Profile
-from model.auth import Login,SucessResponse,SignUp
+from fastapi import FastAPI,Request,status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
+from contextlib import asynccontextmanager
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from sqlalchemy import create_engine
 import os
 from dotenv import load_dotenv
-from typing import List
+
+from application.notification import SendNotification
+
+from routers.auth import get_auth_router
+from routers.event import get_event_router
+from routers.user import get_users_router
+from routers.attendance import get_attendances_router
+from routers.rankings import get_rankings_router
+from routers.websocket import get_websocket_router
 
 load_dotenv()
-
-app = FastAPI()
 supabase_url = os.getenv('SUPABASE_URL')
 engine = create_engine(supabase_url)
+notification = SendNotification(supabase_url)
 
+async def send_reminders():
+    await notification.send_remind(62)
+    
+async def send_cautions():
+    await notification.send_caution_all_events()
+    
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    scheduler = AsyncIOScheduler()
+    
+    scheduler.add_job(send_reminders, "cron", hour=22, minute=0)
+    scheduler.add_job(send_cautions, "cron", hour=23, minute=0)
+    scheduler.start()
+    
+    try:
+        yield
+    finally:
+        scheduler.shutdown()
+
+app = FastAPI(lifespan=lifespan)
+
+app.include_router(get_auth_router(supabase_url))
+app.include_router(get_event_router(supabase_url))
+app.include_router(get_users_router(supabase_url))
+app.include_router(get_attendances_router(supabase_url))
+app.include_router(get_rankings_router(supabase_url))
+app.include_router(get_websocket_router(supabase_url))
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {"Hello": "うぃっす〜"}
+
+@app.head("/monitor")
+def read_root():
+    return {"Hello": "うぃっす〜"}
+
+@app.exception_handler(RequestValidationError)
+async def handler(request:Request, exc:RequestValidationError):
+    print(exc)
+    return JSONResponse(content={}, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+@app.get("/remind/{event_id}")
+def send_notification(event_id:int):
+    response = notification.send_remind(event_id)
+    return response
 
 
-@app.post("/signup", response_model=SucessResponse)
-def signup(input:SignUp):
-    user_name = input.user_name
-    auth_id = input.auth_id
-    token = input.token
-    with engine.connect() as conn:
-        result = conn.execute(text("INSERT INTO users(name, auth_id, token) VALUES(:user_name, :auth_id, :token)"),
-            {"user_name": user_name, "auth_id": auth_id, "token": token}).mappings()
-    return SucessResponse(success=True)
-    
+from service.fetch_profile import ProfileService
 
-@app.get("/events/board",response_model=Events)
-def get_events_board():
-    with engine.connect() as conn:
-        result = conn.execute(text("SELECT * FROM events")).mappings()
-        event_list = [Event(**row) for row in result]
-    return Events(events=event_list)
+profile_service = ProfileService(supabase_url)
 
-
-# @app.post("/events")
-
-@app.get("/users/{user_id}/profile",response_model=Profile)
-def get_profile(user_id: int):
-    with engine.connect() as conn:
-        query = text("SELECT * FROM users WHERE id = :user_id")
-        result = conn.execute(query, {"user_id": user_id}).mappings()
-        profiles = [Profile(**row) for row in result]
-    return profiles
-
-# @app.put("/users/{user_id}/profile")
-
-# @app.post("/attendances/{event_id}/{user_id}")
+@app.get("/check/{user_id}")
+def send_notification(user_id:int):
+    response = notification.send_next_aliase(user_id)
+    return response

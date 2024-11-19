@@ -1,14 +1,15 @@
 from pydantic import BaseModel
 
-class Login(BaseModel):
-    user_name : str
-    user_id : int
+class AuthResponse(BaseModel):
+    id : int
 
-class SucessResponse(BaseModel):
-    success : bool
+class SuccessResponse(BaseModel):
+    is_success : bool
 
 class SignUp(BaseModel):
-    token: str
     user_name: str
-    auth_id: int
-    
+    auth_id: str
+    token: str
+
+class SignIn(BaseModel):
+    auth_id:str

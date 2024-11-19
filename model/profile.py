@@ -1,9 +1,21 @@
 from pydantic import BaseModel
+from datetime import timedelta
+from typing import List, Optional
 
-class Profile(BaseModel):
+class UserProfile(BaseModel):
     name: str
-    alias: str
-    late_count: int
-    total_late_time: int
-    late_percentage: float
-    on_time_count: int
+    alias: Optional[str] = None
+    late_count: int = None
+    total_late_time: int = None
+    late_percentage: float = None
+    on_time_count: int = None
+    tikoku_point: int
+
+class Delay(BaseModel):
+    total_late_time: int = None
+    late_count: int = None
+    on_time_count: int = None
+    late_percentage: float = None
+    
+class Name(BaseModel):
+    name: str
